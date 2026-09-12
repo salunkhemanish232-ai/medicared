@@ -3029,6 +3029,18 @@ input,select,textarea,.track-input,.form-group input,.form-group select,.form-gr
 .facility-gallery figure{ height:280px; margin:0; }
 .facility-gallery figcaption{ display:block; }
 
+.live-data-status{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    margin-top:10px;
+    color:var(--success);
+    font-size:.86rem;
+    font-weight:800;
+}
+
+.live-data-status i{ font-size:.72rem; }
+
 @media (max-width:900px){
     .gallery-hero{ grid-template-columns:1fr; }
     .gallery-hero-image{ height:380px; }

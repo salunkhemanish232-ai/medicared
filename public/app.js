@@ -401,6 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const adminAppointmentsBody = document.querySelector('#adminAppointmentsBody');
     const adminPatientsBody = document.querySelector('#adminPatientsBody');
+    const adminUsersBody = document.querySelector('#adminUsersBody');
     const adminDoctorsBody = document.querySelector('#adminDoctorsBody');
     const doctorModal = document.querySelector('#doctorModal');
     const doctorForm = document.querySelector('#doctorForm');
@@ -417,6 +418,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.querySelector('#adminPendingAppointments').textContent = summary.pendingAppointments;
                 document.querySelector('#adminConfirmedAppointments').textContent = summary.confirmedAppointments;
                 document.querySelector('#adminTotalPatients').textContent = summary.totalPatients;
+                document.querySelector('#adminTotalUsers').textContent = summary.totalUsers;
+                const liveStatus = document.querySelector('#adminLiveStatus');
+                if (liveStatus) liveStatus.innerHTML = `<i class="fa-solid fa-circle-check"></i> Live data synced at ${new Date().toLocaleTimeString()}`;
 
                 if (adminAppointmentsBody) {
                     const appointments = summary.upcoming || [];
@@ -472,6 +476,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
+                if (adminUsersBody) {
+                    const { users } = await api('/api/users');
+                    if (!users.length) {
+                        adminUsersBody.innerHTML = '<tr><td colspan="4">No registered users yet.</td></tr>';
+                    } else {
+                        adminUsersBody.innerHTML = users.map((user) => `
+                            <tr>
+                                <td>${user.name}</td>
+                                <td>${user.email}</td>
+                                <td>${user.phone}</td>
+                                <td>${user.age}</td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+
                 if (adminDoctorsBody) {
                     const { doctors } = await api('/api/doctors');
                     if (!doctors.length) {
@@ -519,6 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (adminAppointmentsBody) adminAppointmentsBody.innerHTML = `<tr><td colspan="5">${error.message}</td></tr>`;
                 if (adminPatientsBody) adminPatientsBody.innerHTML = `<tr><td colspan="4">${error.message}</td></tr>`;
                 if (adminDoctorsBody) adminDoctorsBody.innerHTML = `<tr><td colspan="7">${error.message}</td></tr>`;
+                if (adminUsersBody) adminUsersBody.innerHTML = `<tr><td colspan="4">${error.message}</td></tr>`;
             }
         }
 

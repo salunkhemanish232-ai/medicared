@@ -26,6 +26,7 @@
             <span class="tag"><i class="fa-solid fa-user-shield"></i> Admin Dashboard</span>
             <h1>Operations overview</h1>
             <p id="adminWelcomeMessage">Welcome back, Administrator.</p>
+            <p class="live-data-status" id="adminLiveStatus"><i class="fa-solid fa-arrows-rotate"></i> Connecting to live data...</p>
         </header>
 
         <section class="website-section">
@@ -46,6 +47,31 @@
                     <h2 id="adminTotalPatients">0</h2>
                     <p>Patients</p>
                 </div>
+                <div class="stat-box">
+                    <h2 id="adminTotalUsers">0</h2>
+                    <p>Registered Users</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="website-section">
+            <div class="table-container">
+                <div class="table-header-row">
+                    <h2>Registered users</h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Age</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminUsersBody">
+                        <tr><td colspan="4">Loading registered users...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </section>
 
