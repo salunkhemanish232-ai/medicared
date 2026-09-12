@@ -185,9 +185,12 @@ async function ensureDatabase() {
             phone VARCHAR(255) NOT NULL,
             age INT NOT NULL,
             password TEXT NOT NULL,
-            createdAt DATETIME NOT NULL
+            createdAt DATETIME NOT NULL,
+            lastLoginAt DATETIME NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
+
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS lastLoginAt DATETIME NULL');
 
     await pool.query(`
         CREATE TABLE IF NOT EXISTS admins (
@@ -290,7 +293,7 @@ async function writeDatabase(database) {
     await pool.query('DELETE FROM doctors');
 
     for (const user of database.users || []) {
-        await pool.query('INSERT INTO users (id, name, email, phone, age, password, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)', [user.id, user.name, user.email, user.phone, Number(user.age), user.password, user.createdAt]);
+        await pool.query('INSERT INTO users (id, name, email, phone, age, password, createdAt, lastLoginAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [user.id, user.name, user.email, user.phone, Number(user.age), user.password, user.createdAt, user.lastLoginAt || null]);
     }
 
     for (const admin of database.admins || []) {
@@ -342,7 +345,7 @@ function readBody(request) {
 }
 
 function publicUser(user) {
-    return { id: user.id, name: user.name, email: user.email, phone: user.phone, age: user.age };
+    return { id: user.id, name: user.name, email: user.email, phone: user.phone, age: user.age, lastLoginAt: user.lastLoginAt || null };
 }
 
 function publicAdmin(admin) {
@@ -466,6 +469,9 @@ async function handleApi(request, response, requestUrl) {
         if (!user || !passwordMatches(password, user.password)) {
             return sendError(response, 401, 'Email or password is incorrect.');
         }
+
+        user.lastLoginAt = new Date().toISOString();
+        await writeDatabase(database);
 
         return sendJson(response, 200, { user: { ...publicUser(user), role: 'patient' } });
     }
