@@ -1,0 +1,195 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Medicare provides trusted doctors, emergency care, diagnostics, and online appointment booking.">
+    <title>Medicare - Modern Healthcare</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="home-simple">
+
+<div class="top-banner" role="banner">
+    <div><i class="fa-solid fa-phone"></i> Emergency: <strong>+91 98765 43210</strong></div>
+    <div><i class="fa-solid fa-clock"></i> Open 24/7 for emergency care</div>
+</div>
+<nav class="navbar" role="navigation" aria-label="Main Navigation">
+    <div class="navbar-container">
+        <a href="index.html" class="logo">
+            <i class="fa-solid fa-hospital"></i> Medi<span>care</span>
+        </a>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <ul class="menu" id="nav-menu">
+            <li><a href="index.html" class="nav-link active">Home</a></li>
+            <li><a href="about.html" class="nav-link">About</a></li>
+            <li><a href="services.html" class="nav-link">Services</a></li>
+            <li><a href="doctors.html" class="nav-link">Doctors</a></li>
+            <li><a href="gallery.html" class="nav-link">Gallery</a></li>
+            <li><a href="appointments.html" class="nav-link">Appointments</a></li>
+            <li><a href="contact.html" class="nav-link">Contact</a></li>
+            <li><a href="login.html" id="nav-login-link" class="nav-link">Login</a></li>
+            <li><a href="register.html" id="nav-register-link" class="nav-link nav-register-link">Register</a></li>
+            <li id="nav-logout-item" style="display:none;"><a href="#" id="nav-logout-link" class="nav-link">Logout</a></li>
+        </ul>
+    </div>
+</nav>
+
+<main class="site-hero">
+    <div class="site-hero-content">
+        <span class="tag"><i class="fa-solid fa-heart-pulse"></i> Trusted Healthcare</span>
+        <h1>Quality care for every patient, every day.</h1>
+        <p>Book appointments with experienced doctors, access hospital services, and get support from a caring medical team.</p>
+        <div class="hero-actions">
+            <a href="appointments.html" class="btn"><i class="fa-solid fa-calendar-plus"></i> Book Appointment</a>
+            <a href="services.html" class="btn btn-outline"><i class="fa-solid fa-stethoscope"></i> View Services</a>
+        </div>
+        <div class="hero-trust" aria-label="Medicare highlights">
+            <span><i class="fa-solid fa-circle-check"></i> 10k+ patients served</span>
+            <span><i class="fa-solid fa-shield-heart"></i> Compassionate care</span>
+        </div>
+    </div>
+    <div class="site-hero-panel" aria-label="Hospital quick information">
+        <div>
+            <i class="fa-solid fa-user-doctor"></i>
+            <strong>Expert Doctors</strong>
+            <span>Specialist care across major departments</span>
+        </div>
+        <div>
+            <i class="fa-solid fa-truck-medical"></i>
+            <strong>Emergency Care</strong>
+            <span>Fast support for urgent medical needs</span>
+        </div>
+        <div>
+            <i class="fa-solid fa-vial-circle-check"></i>
+            <strong>Diagnostics</strong>
+            <span>Lab tests, imaging, and clinical reports</span>
+        </div>
+    </div>
+</main>
+
+<section class="website-section">
+    <div class="section-headline">
+        <div>
+            <span class="tag tag--primary"><i class="fa-solid fa-hospital-user"></i> Our Services</span>
+            <h2>Healthcare services made simple</h2>
+            <p class="subtitle">Everything patients need for consultation, testing, and hospital support.</p>
+        </div>
+    </div>
+    <div class="simple-card-grid">
+        <article class="feature-card">
+            <i class="fa-solid fa-briefcase-medical flow-icon"></i>
+            <h3>Emergency & OPD</h3>
+            <p class="subtitle">Medicare for urgent needs and regular outpatient visits.</p>
+        </article>
+        <article class="feature-card">
+            <i class="fa-solid fa-user-doctor flow-icon"></i>
+            <h3>Specialist Doctors</h3>
+            <p class="subtitle">Consult cardiology, pediatrics, orthopedics, ENT, and dermatology specialists.</p>
+        </article>
+        <article class="feature-card">
+            <i class="fa-solid fa-flask-vial flow-icon"></i>
+            <h3>Lab & Imaging</h3>
+            <p class="subtitle">Book diagnostic tests and get reliable medical reports.</p>
+        </article>
+    </div>
+</section>
+
+<section class="website-section care-tools-section">
+    <div class="section-headline">
+        <div>
+            <span class="tag tag--accent"><i class="fa-solid fa-sparkles"></i> Connected Care</span>
+            <h2>More ways to feel looked after</h2>
+            <p class="subtitle">From quick answers to virtual visits, Medicare keeps support close when you need it.</p>
+        </div>
+    </div>
+    <div class="care-tools-grid">
+        <article class="care-tool-card care-tool-card--chat">
+            <div class="care-tool-icon"><i class="fa-solid fa-comments"></i></div>
+            <div><span class="eyebrow">Live support</span><h3>Chat with Medicare</h3><p>Get help with appointments, departments, timings, and patient access.</p></div>
+            <button type="button" class="btn btn-small" data-open-chat><i class="fa-solid fa-message"></i> Start chat</button>
+        </article>
+        <article class="care-tool-card care-tool-card--video">
+            <div class="care-tool-icon"><i class="fa-solid fa-video"></i></div>
+            <div><span class="eyebrow">Virtual care</span><h3>Video consultation</h3><p>Meet a doctor online from a private, comfortable space at home.</p></div>
+            <button type="button" class="btn btn-small" data-open-video><i class="fa-solid fa-video"></i> See how it works</button>
+        </article>
+        <article class="care-tool-card care-tool-card--records">
+            <div class="care-tool-icon"><i class="fa-solid fa-file-waveform"></i></div>
+            <div><span class="eyebrow">Patient records</span><h3>Keep care in one place</h3><p>Track visits, follow-ups, and appointment updates from your dashboard.</p></div>
+            <a href="dashboard.html" class="btn btn-small btn-outline"><i class="fa-solid fa-arrow-right"></i> Open portal</a>
+        </article>
+        <article class="care-tool-card care-tool-card--resources">
+            <div class="care-tool-icon"><i class="fa-solid fa-book-medical"></i></div>
+            <div><span class="eyebrow">Patient library</span><h3>Health resources</h3><p>Read practical guidance for preparing, visiting, and following up after care.</p></div>
+            <a href="resources.html" class="btn btn-small btn-outline"><i class="fa-solid fa-arrow-right"></i> Explore resources</a>
+        </article>
+    </div>
+</section>
+
+<section class="website-section gallery-preview-section">
+    <div class="section-headline">
+        <div>
+            <span class="tag tag--primary"><i class="fa-solid fa-images"></i> Inside Medicare</span>
+            <h2>A hospital designed around your comfort</h2>
+            <p class="subtitle">Explore our calm patient rooms, modern treatment spaces, and welcoming care environment.</p>
+        </div>
+        <a href="gallery.html" class="btn btn-outline"><i class="fa-solid fa-arrow-right"></i> View hospital gallery</a>
+    </div>
+    <div class="gallery-preview-grid">
+        <a class="gallery-preview-card gallery-preview-card--wide" href="gallery.html">
+            <img src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1200&q=85" alt="Bright Medicare hospital reception">
+            <span><strong>Welcoming reception</strong><small>Easy arrivals and patient support</small></span>
+        </a>
+        <a class="gallery-preview-card" href="gallery.html">
+            <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=900&q=85" alt="Modern private patient room">
+            <span><strong>Private rooms</strong><small>Quiet spaces for recovery</small></span>
+        </a>
+        <a class="gallery-preview-card" href="gallery.html">
+            <img src="https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=900&q=85" alt="Modern hospital corridor">
+            <span><strong>Care corridors</strong><small>Clean, connected clinical spaces</small></span>
+        </a>
+    </div>
+</section>
+
+<section class="website-section website-cta">
+    <div>
+        <span class="tag tag--success"><i class="fa-solid fa-calendar-check"></i> Easy Booking</span>
+        <h2>Need to see a doctor?</h2>
+        <p class="subtitle">Create your patient account and schedule an appointment with the right department.</p>
+    </div>
+    <div class="hero-actions">
+        <a href="register.html" class="btn"><i class="fa-solid fa-user-plus"></i> Register Now</a>
+        <a href="login.html" class="btn btn-outline"><i class="fa-solid fa-right-to-bracket"></i> Patient Login</a>
+    </div>
+</section>
+
+<section class="desktop-grid simple-stats" role="region" aria-label="Hospital statistics">
+    <div class="stat-box">
+        <i class="fa-solid fa-user-injured"></i>
+        <div><h2>10k+</h2><p>Patients Served</p></div>
+    </div>
+    <div class="stat-box">
+        <i class="fa-solid fa-user-doctor"></i>
+        <div><h2>25+</h2><p>Doctors</p></div>
+    </div>
+    <div class="stat-box">
+        <i class="fa-solid fa-bed-pulse"></i>
+        <div><h2>24/7</h2><p>Emergency</p></div>
+    </div>
+    <div class="stat-box">
+        <i class="fa-solid fa-star"></i>
+        <div><h2>4.8</h2><p>Patient Rating</p></div>
+    </div>
+</section>
+
+<footer class="site-footer" role="contentinfo">
+    <p>&copy; 2026 Medicare. All rights reserved.</p>
+    <p>Modern healthcare, simple appointments, trusted support.</p>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>
+ 

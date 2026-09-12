@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctors - Medicare</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="top-banner" role="banner">
+    <div><i class="fa-solid fa-phone"></i> Emergency: <strong>+91 98765 43210</strong></div>
+    <div><i class="fa-solid fa-clock"></i> Open 24/7 for emergency care</div>
+</div>
+
+<nav class="navbar" role="navigation" aria-label="Main Navigation">
+    <div class="navbar-container">
+        <a href="index.html" class="logo">
+            <i class="fa-solid fa-hospital"></i> Medi<span>care</span>
+        </a>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <ul class="menu" id="nav-menu">
+            <li><a href="index.html" class="nav-link">Home</a></li>
+            <li><a href="about.html" class="nav-link">About</a></li>
+            <li><a href="services.html" class="nav-link">Services</a></li>
+            <li><a href="doctors.html" class="nav-link active">Doctors</a></li>
+            <li><a href="appointments.html" class="nav-link">Appointments</a></li>
+            <li><a href="contact.html" class="nav-link">Contact</a></li>
+            <li><a href="login.html" id="nav-login-link" class="nav-link">Login</a></li>
+            <li><a href="register.html" id="nav-register-link" class="nav-link nav-register-link">Register</a></li>
+            <li id="nav-logout-item" style="display:none;"><a href="#" id="nav-logout-link" class="nav-link">Logout</a></li>
+        </ul>
+    </div>
+</nav>
+
+<main class="doctors-hero">
+    <div class="doctors-hero-copy">
+        <span class="tag"><i class="fa-solid fa-user-doctor"></i> Trusted specialists</span>
+        <h1>Care that starts with the right doctor.</h1>
+        <p>Find a specialist who understands your needs, check their availability, and book your next consultation in a few simple steps.</p>
+        <div class="hero-actions">
+            <a href="appointments.html" class="btn"><i class="fa-solid fa-calendar-plus"></i> Book an appointment</a>
+            <a href="#doctor-directory" class="btn btn-outline"><i class="fa-solid fa-magnifying-glass"></i> Explore specialists</a>
+        </div>
+        <div class="doctors-hero-trust">
+            <span><i class="fa-solid fa-shield-heart"></i> Patient-first care</span>
+            <span><i class="fa-solid fa-clock"></i> Flexible schedules</span>
+        </div>
+    </div>
+    <div class="doctors-hero-card">
+        <div class="hero-card-icon"><i class="fa-solid fa-stethoscope"></i></div>
+        <span class="eyebrow">Your care team</span>
+        <strong>Specialist support, made simple</strong>
+        <p>From preventive care to ongoing treatment, our departments work together around you.</p>
+        <div class="hero-card-rule"></div>
+        <span class="hero-card-note"><i class="fa-solid fa-circle-check"></i> Secure online appointment booking</span>
+    </div>
+</main>
+
+<section class="website-section doctors-directory-section" id="doctor-directory">
+    <div class="section-headline doctors-directory-heading">
+        <div>
+            <span class="tag tag--primary"><i class="fa-solid fa-users"></i> Find your specialist</span>
+            <h2>Meet the Medicare medical team</h2>
+            <p class="subtitle">Browse specialties and choose a convenient consultation schedule.</p>
+        </div>
+        <div class="doctors-live-status"><i class="fa-solid fa-circle"></i> Live directory</div>
+    </div>
+
+    <div class="doctor-directory-toolbar">
+        <label class="doctor-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input id="doctorSearchInput" type="search" placeholder="Search by doctor or specialty" aria-label="Search doctors">
+        </label>
+        <div class="doctor-filter public-filter" aria-label="Filter doctors by department">
+            <button type="button" class="filter-btn active" data-department="all">All specialists</button>
+            <button type="button" class="filter-btn" data-department="Cardiology">Cardiology</button>
+            <button type="button" class="filter-btn" data-department="Pediatrics">Pediatrics</button>
+            <button type="button" class="filter-btn" data-department="Orthopedics">Orthopedics</button>
+            <button type="button" class="filter-btn" data-department="Dermatology">Dermatology</button>
+            <button type="button" class="filter-btn" data-department="ENT">ENT</button>
+        </div>
+    </div>
+
+    <div class="doctor-directory-summary"><strong id="doctorResultCount">Loading doctors...</strong><span>Appointments are confirmed by our care team.</span></div>
+    <div id="publicDoctorsList" class="simple-card-grid doctors-public-grid"></div>
+</section>
+
+<section class="website-section website-cta">
+    <div>
+        <span class="tag tag--success"><i class="fa-solid fa-calendar-plus"></i> Need Consultation?</span>
+        <h2>Book a doctor appointment online</h2>
+        <p class="subtitle">Login to save your appointment and track its status.</p>
+    </div>
+    <a href="appointments.html" class="btn"><i class="fa-solid fa-calendar-check"></i> Go to Appointments</a>
+</section>
+
+<footer class="site-footer" role="contentinfo">
+    <p>&copy; 2026 Medicare. All rights reserved.</p>
+    <p>Modern healthcare, simple appointments, trusted support.</p>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>
+

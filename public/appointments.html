@@ -1,0 +1,152 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointments - Medicare</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="top-banner" role="banner">
+    <div><i class="fa-solid fa-phone"></i> Emergency: <strong>+91 98765 43210</strong></div>
+    <div><i class="fa-solid fa-clock"></i> Open 24/7 for emergency care</div>
+</div>
+
+<nav class="navbar" role="navigation" aria-label="Main Navigation">
+    <div class="navbar-container">
+        <a href="index.html" class="logo">
+            <i class="fa-solid fa-hospital"></i> Medi<span>care</span>
+        </a>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <ul class="menu" id="nav-menu">
+            <li><a href="index.html" class="nav-link">Home</a></li>
+            <li><a href="about.html" class="nav-link">About</a></li>
+            <li><a href="services.html" class="nav-link">Services</a></li>
+            <li><a href="doctors.html" class="nav-link">Doctors</a></li>
+            <li><a href="appointments.html" class="nav-link active">Appointments</a></li>
+            <li><a href="contact.html" class="nav-link">Contact</a></li>
+            <li><a href="login.html" id="nav-login-link" class="nav-link">Login</a></li>
+            <li><a href="register.html" id="nav-register-link" class="nav-link nav-register-link">Register</a></li>
+            <li id="nav-logout-item" style="display:none;"><a href="#" id="nav-logout-link" class="nav-link">Logout</a></li>
+        </ul>
+    </div>
+</nav>
+
+<main class="page-hero simple-page-hero">
+    <span class="tag"><i class="fa-solid fa-calendar-check"></i> Appointments</span>
+    <h1>Book and track your doctor visit</h1>
+    <p class="subtitle">Choose a specialist, select a date and time, and save your appointment online.</p>
+    <div class="hero-actions">
+        <button id="openBookingBtn" class="btn"><i class="fa-solid fa-calendar-plus"></i> Book Appointment</button>
+        <a href="doctors.html" class="btn btn-outline"><i class="fa-solid fa-user-doctor"></i> View Doctors</a>
+    </div>
+</main>
+
+<section class="website-section appointment-public-section">
+    <div class="metrics-grid">
+        <div class="metric-card" data-variant="primary">
+            <div class="metric-icon"><i class="fa-solid fa-calendar-days"></i></div>
+            <div><h2 id="totalSlots">0</h2><p>Total Appointments</p></div>
+        </div>
+        <div class="metric-card" data-variant="warning">
+            <div class="metric-icon"><i class="fa-solid fa-clock"></i></div>
+            <div><h2 id="pendingSlots">0</h2><p>Pending</p></div>
+        </div>
+        <div class="metric-card" data-variant="success">
+            <div class="metric-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <div><h2 id="confirmedSlots">0</h2><p>Confirmed</p></div>
+        </div>
+    </div>
+
+    <div class="table-container appointment-table-wrap">
+        <div class="table-toolbar">
+            <div class="search-box-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input id="appointmentSearchInput" type="search" placeholder="Search date, doctor, or reason">
+            </div>
+            <div class="status-filter-wrap">
+                <label for="appointmentStatusFilter">Status</label>
+                <select id="appointmentStatusFilter">
+                    <option value="all">All</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+        </div>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Fee</th>
+                </tr>
+            </thead>
+            <tbody id="appointmentsBody">
+                <tr>
+                    <td colspan="6" style="text-align:center; padding:30px; color:var(--muted);">
+                        Login to view your appointments.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div id="bookingModal" class="modal">
+    <div class="modal-content">
+        <div class="auth-header">
+            <i class="fa-solid fa-calendar-plus auth-icon"></i>
+            <h2>Book Appointment</h2>
+            <p>Select your doctor and visit time.</p>
+        </div>
+
+        <form id="bookingForm" class="auth-form">
+            <div class="form-group">
+                <label for="doctorSelect"><i class="fa-solid fa-user-md"></i> Select Doctor</label>
+                <select id="doctorSelect" required>
+                    <option value="">Choose a doctor...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="appointmentDate"><i class="fa-solid fa-calendar"></i> Appointment Date</label>
+                <input type="date" id="appointmentDate" required>
+            </div>
+
+            <div class="form-group">
+                <label for="appointmentTime"><i class="fa-solid fa-clock"></i> Appointment Time</label>
+                <input type="time" id="appointmentTime" required>
+            </div>
+
+            <div class="form-group">
+                <label for="reason"><i class="fa-solid fa-stethoscope"></i> Reason for Visit</label>
+                <textarea id="reason" placeholder="Describe your medical concern..." rows="3" required></textarea>
+            </div>
+
+            <button type="submit" class="btn-auth" id="submitBtn">
+                <i class="fa-solid fa-circle-check"></i> Confirm Booking
+            </button>
+            <button type="button" id="closeModalBtn" class="btn-secondary" style="width:100%; margin-top:10px;">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<footer class="site-footer" role="contentinfo">
+    <p>&copy; 2026 Medicare. All rights reserved.</p>
+    <p>Modern healthcare, simple appointments, trusted support.</p>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>
+
+

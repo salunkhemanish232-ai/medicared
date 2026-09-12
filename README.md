@@ -1,0 +1,62 @@
+# Medicare Hospital Website
+
+## Project layout
+
+- `public/` contains all HTML pages, shared CSS, and frontend JavaScript.
+- `database/` contains local JSON fallback data and legacy SQLite data.
+- `server.js` serves the website and API.
+- MySQL is the production database when `DB_HOST`, `DB_USER`, and `DB_PASSWORD` are configured.
+
+## Run locally
+
+```powershell
+npm install
+npm start
+```
+
+Open `http://localhost:8080`.
+
+The default admin account is:
+
+- Email: `admin@medicare.com`
+- Password: `admin123`
+
+Change this password before publishing publicly.
+
+## Use on a phone
+
+1. Connect the phone and computer to the same Wi-Fi.
+2. Find the computer IPv4 address with `ipconfig`.
+3. Start the server with `npm start`.
+4. Open `http://YOUR-COMPUTER-IP:8080` on the phone.
+5. Allow Node.js through Windows Firewall if the phone cannot connect.
+
+## MySQL configuration
+
+Set these variables before starting the server:
+
+```powershell
+$env:DB_HOST="127.0.0.1"
+$env:DB_PORT="3306"
+$env:DB_USER="root"
+$env:DB_PASSWORD="your-mysql-password"
+$env:DB_NAME="medicare_db"
+npm start
+```
+
+The server creates the database and tables automatically when the MySQL user has permission to create databases. If MySQL is unavailable, local development falls back to `database/medicare-db.json`.
+
+## Publish online
+
+Use a Node.js host such as Render, Railway, or a VPS and a hosted MySQL provider such as Railway MySQL, Aiven, or PlanetScale.
+
+1. Upload this project to a Git repository.
+2. Create a Node web service using `npm install` and `npm start`. Render can use the included `render.yaml`.
+3. Add the MySQL environment variables in the hosting dashboard.
+4. Set `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME`.
+5. Set `PORT` only if the host requires it; the server already reads the host-provided port.
+6. Open the public HTTPS URL and test registration, login, appointments, and admin actions.
+
+Do not publish the local JSON database as the production source of truth. Use MySQL for persistent online data and keep credentials in hosting environment variables, never in frontend files.
+
+The repository ignores `database/medicare-db.json` and local database files. This prevents test patient records and local credentials from being uploaded to GitHub.

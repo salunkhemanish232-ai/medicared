@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Explore Medicare hospital rooms, facilities, and patient care spaces.">
+    <title>Hospital Gallery - Medicare</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="top-banner"><div><i class="fa-solid fa-phone"></i> Emergency: <strong>+91 98765 43210</strong></div><div><i class="fa-solid fa-clock"></i> Open 24/7 for emergency care</div></div>
+<nav class="navbar" role="navigation" aria-label="Main Navigation">
+    <div class="navbar-container">
+        <a href="index.html" class="logo"><i class="fa-solid fa-hospital"></i> Medi<span>care</span></a>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation menu"><i class="fa-solid fa-bars"></i></button>
+        <ul class="menu" id="nav-menu">
+            <li><a href="index.html" class="nav-link">Home</a></li>
+            <li><a href="about.html" class="nav-link">About</a></li>
+            <li><a href="services.html" class="nav-link">Services</a></li>
+            <li><a href="doctors.html" class="nav-link">Doctors</a></li>
+            <li><a href="gallery.html" class="nav-link active">Gallery</a></li>
+            <li><a href="appointments.html" class="nav-link">Appointments</a></li>
+            <li><a href="contact.html" class="nav-link">Contact</a></li>
+            <li><a href="login.html" id="nav-login-link" class="nav-link">Login</a></li>
+            <li><a href="register.html" id="nav-register-link" class="nav-link nav-register-link">Register</a></li>
+            <li id="nav-logout-item" style="display:none;"><a href="#" id="nav-logout-link" class="nav-link">Logout</a></li>
+        </ul>
+    </div>
+</nav>
+
+<main class="gallery-page">
+    <section class="gallery-hero">
+        <div>
+            <span class="tag"><i class="fa-solid fa-camera-retro"></i> Medicare spaces</span>
+            <h1>See where your care happens.</h1>
+            <p>From your first welcome at reception to a restful private room, every space is planned to feel calm, clear, and cared for.</p>
+            <div class="hero-actions">
+                <a href="appointments.html" class="btn"><i class="fa-solid fa-calendar-check"></i> Book a visit</a>
+                <a href="#rooms" class="btn btn-outline"><i class="fa-solid fa-bed-pulse"></i> Explore rooms</a>
+            </div>
+        </div>
+        <div class="gallery-hero-image">
+            <img src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1400&q=85" alt="Bright modern hospital reception area">
+            <span><i class="fa-solid fa-circle-check"></i> Designed for comfort and clarity</span>
+        </div>
+    </section>
+
+    <section class="gallery-section" id="rooms">
+        <div class="section-headline">
+            <div>
+                <span class="tag tag--primary"><i class="fa-solid fa-bed"></i> Patient rooms</span>
+                <h2>Restful rooms for every kind of stay</h2>
+                <p class="subtitle">Comfortable spaces, thoughtful details, and support close by.</p>
+            </div>
+        </div>
+        <div class="room-grid">
+            <article class="room-card room-card--featured">
+                <div class="room-card-image"><img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1200&q=85" alt="Medicare private patient room"><span class="room-badge">Most requested</span></div>
+                <div class="room-card-content"><span class="eyebrow">Private room</span><h3>Quiet recovery suite</h3><p>A calm room for focused recovery, with natural light, visitor seating, and bedside assistance.</p><ul class="room-features"><li><i class="fa-solid fa-check"></i> Single patient space</li><li><i class="fa-solid fa-check"></i> Attendant seating</li><li><i class="fa-solid fa-check"></i> Nurse call access</li></ul></div>
+            </article>
+            <article class="room-card">
+                <div class="room-card-image"><img src="https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1000&q=85" alt="Bright shared hospital room"><span class="room-badge room-badge--teal">Family care</span></div>
+                <div class="room-card-content"><span class="eyebrow">General ward</span><h3>Connected care bay</h3><p>Bright, hygienic rooms with a clinical team nearby and space for family support.</p><ul class="room-features"><li><i class="fa-solid fa-check"></i> Monitored beds</li><li><i class="fa-solid fa-check"></i> Family-friendly layout</li><li><i class="fa-solid fa-check"></i> 24/7 nursing</li></ul></div>
+            </article>
+            <article class="room-card">
+                <div class="room-card-image"><img src="https://images.unsplash.com/photo-1584982751601-97dcc096659c?auto=format&fit=crop&w=1000&q=85" alt="Modern intensive care unit"><span class="room-badge room-badge--orange">Critical care</span></div>
+                <div class="room-card-content"><span class="eyebrow">ICU support</span><h3>Advanced monitoring</h3><p>Specialist critical care spaces equipped for close observation and rapid response.</p><ul class="room-features"><li><i class="fa-solid fa-check"></i> Advanced monitoring</li><li><i class="fa-solid fa-check"></i> Specialist team</li><li><i class="fa-solid fa-check"></i> Emergency ready</li></ul></div>
+            </article>
+        </div>
+    </section>
+
+    <section class="gallery-section gallery-section--soft">
+        <div class="section-headline">
+            <div><span class="tag tag--accent"><i class="fa-solid fa-building-shield"></i> Hospital facilities</span><h2>Every detail supports better care</h2><p class="subtitle">A modern environment for consultations, diagnostics, procedures, and family support.</p></div>
+        </div>
+        <div class="facility-gallery">
+            <figure><img src="https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=1000&q=85" alt="Hospital operating theatre"><figcaption><strong>Procedure theatre</strong><span>Prepared for safe clinical care</span></figcaption></figure>
+            <figure><img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1000&q=85" alt="Hospital diagnostics equipment"><figcaption><strong>Diagnostics lab</strong><span>Clear results for confident decisions</span></figcaption></figure>
+            <figure><img src="https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?auto=format&fit=crop&w=1000&q=85" alt="Hospital consultation room"><figcaption><strong>Consultation rooms</strong><span>Private conversations with your doctor</span></figcaption></figure>
+            <figure><img src="https://images.unsplash.com/photo-1519494080410-f9aa8f52f5b0?auto=format&fit=crop&w=1000&q=85" alt="Hospital waiting area"><figcaption><strong>Family lounge</strong><span>A welcoming place to pause and recharge</span></figcaption></figure>
+        </div>
+    </section>
+
+    <section class="website-section website-cta"><div><span class="tag tag--success"><i class="fa-solid fa-calendar-check"></i> Ready when you are</span><h2>Plan your visit with Medicare</h2><p class="subtitle">Find a doctor, choose a service, and book your appointment online.</p></div><a href="appointments.html" class="btn"><i class="fa-solid fa-arrow-right"></i> Book appointment</a></section>
+</main>
+<footer class="site-footer"><p>&copy; 2026 Medicare. All rights reserved.</p><p>Trusted care, simple booking, better support.</p></footer>
+<script src="app.js"></script>
+</body>
+</html>

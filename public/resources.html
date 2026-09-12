@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Medicare patient resources for appointments, visits, virtual care, and recovery planning.">
+    <title>Patient Resources - Medicare</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="top-banner"><div><i class="fa-solid fa-phone"></i> Emergency: <strong>+91 98765 43210</strong></div><div><i class="fa-solid fa-clock"></i> Open 24/7 for emergency care</div></div>
+<nav class="navbar" role="navigation" aria-label="Main Navigation">
+    <div class="navbar-container">
+        <a href="index.html" class="logo"><i class="fa-solid fa-hospital"></i> Medi<span>care</span></a>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation menu"><i class="fa-solid fa-bars"></i></button>
+        <ul class="menu" id="nav-menu">
+            <li><a href="index.html" class="nav-link">Home</a></li>
+            <li><a href="about.html" class="nav-link">About</a></li>
+            <li><a href="services.html" class="nav-link">Services</a></li>
+            <li><a href="doctors.html" class="nav-link">Doctors</a></li>
+            <li><a href="appointments.html" class="nav-link">Appointments</a></li>
+            <li><a href="resources.html" class="nav-link active">Resources</a></li>
+            <li><a href="contact.html" class="nav-link">Contact</a></li>
+            <li><a href="login.html" id="nav-login-link" class="nav-link">Login</a></li>
+            <li><a href="register.html" id="nav-register-link" class="nav-link nav-register-link">Register</a></li>
+            <li id="nav-logout-item" style="display:none;"><a href="#" id="nav-logout-link" class="nav-link">Logout</a></li>
+        </ul>
+    </div>
+</nav>
+
+<main class="resource-hero">
+    <div>
+        <span class="tag tag--primary"><i class="fa-solid fa-book-medical"></i> Patient library</span>
+        <h1>Feel prepared for every step of your care.</h1>
+        <p>Clear, practical guidance for appointments, virtual consultations, hospital visits, and recovery planning.</p>
+        <div class="hero-actions"><a href="appointments.html" class="btn"><i class="fa-solid fa-calendar-plus"></i> Book an appointment</a><button type="button" class="btn btn-outline" data-open-chat><i class="fa-solid fa-comments"></i> Ask support</button></div>
+    </div>
+    <aside class="resource-hero-note"><i class="fa-solid fa-shield-heart"></i><strong>Care that respects your time</strong><span>Save your questions, arrive prepared, and keep your next step clear.</span></aside>
+</main>
+
+<section class="website-section resource-section">
+    <div class="section-headline"><div><span class="eyebrow">Start here</span><h2>Helpful guides for real appointments</h2><p class="subtitle">Short answers for the moments patients ask about most.</p></div></div>
+    <div class="resource-grid">
+        <article class="resource-card"><span class="resource-number">01</span><i class="fa-solid fa-calendar-check"></i><h3>Before your visit</h3><p>Bring your current medicines, previous reports, insurance details, and a short list of questions.</p><a href="appointments.html">Prepare a booking <i class="fa-solid fa-arrow-right"></i></a></article>
+        <article class="resource-card"><span class="resource-number">02</span><i class="fa-solid fa-video"></i><h3>Virtual consultation</h3><p>Choose a quiet space, test your camera and microphone, and keep your health details nearby.</p><button type="button" class="text-button" data-open-video>How video visits work <i class="fa-solid fa-arrow-right"></i></button></article>
+        <article class="resource-card"><span class="resource-number">03</span><i class="fa-solid fa-heart-pulse"></i><h3>After your visit</h3><p>Review your care instructions, note follow-up dates, and contact Medicare if anything is unclear.</p><a href="contact.html">Contact the care team <i class="fa-solid fa-arrow-right"></i></a></article>
+    </div>
+</section>
+
+<section class="website-section resource-lower-grid">
+    <div class="resource-faq-panel"><span class="eyebrow">Common questions</span><h2>Good care starts with clear answers.</h2><details open><summary>How early should I arrive?</summary><p>Arrive 15 minutes before an in-person appointment so the team can confirm your details comfortably.</p></details><details><summary>Can I change my appointment?</summary><p>Use the support chat or contact the Medicare team as soon as possible so we can help find another time.</p></details><details><summary>What if I need urgent help?</summary><p>For an emergency, call your local emergency number immediately. Medicare support is available for non-emergency guidance.</p></details></div>
+    <div class="resource-emergency-panel"><span class="eyebrow">Always important</span><i class="fa-solid fa-truck-medical"></i><h2>For urgent symptoms</h2><p>Severe chest pain, trouble breathing, sudden weakness, or heavy bleeding needs immediate emergency care.</p><a class="btn" href="tel:+919876543210"><i class="fa-solid fa-phone"></i> Call emergency support</a></div>
+</section>
+
+<footer class="site-footer"><p>&copy; 2026 Medicare. All rights reserved.</p><p>Practical information for a calmer care journey.</p></footer>
+<script src="app.js"></script>
+</body>
+</html>

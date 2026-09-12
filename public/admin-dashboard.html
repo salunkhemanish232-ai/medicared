@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicare - Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="dashboard-container admin-dashboard">
+    <aside class="dashboard-sidebar">
+        <a href="index.html" class="dashboard-logo-area"><i class="fa-solid fa-hospital"></i><span>Medicare</span></a>
+        <nav class="dashboard-nav-links" aria-label="Admin dashboard">
+            <a class="active" href="admin-dashboard.html"><i class="fa-solid fa-chart-pie"></i> Overview</a>
+            <a href="appointments.html"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+            <a href="patients.html"><i class="fa-solid fa-user-injured"></i> Patients</a>
+            <a href="doctors.html"><i class="fa-solid fa-user-doctor"></i> Doctors</a>
+            <a href="#" id="nav-logout-link"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </nav>
+        <div class="dashboard-sidebar-footer"><a href="index.html"><i class="fa-solid fa-house"></i> Return Home</a></div>
+    </aside>
+
+    <main class="main-content">
+        <header class="dashboard-header">
+            <span class="tag"><i class="fa-solid fa-user-shield"></i> Admin Dashboard</span>
+            <h1>Operations overview</h1>
+            <p id="adminWelcomeMessage">Welcome back, Administrator.</p>
+        </header>
+
+        <section class="website-section">
+            <div class="stats-container">
+                <div class="stat-box">
+                    <h2 id="adminTotalAppointments">0</h2>
+                    <p>Total Appointments</p>
+                </div>
+                <div class="stat-box">
+                    <h2 id="adminPendingAppointments">0</h2>
+                    <p>Pending</p>
+                </div>
+                <div class="stat-box">
+                    <h2 id="adminConfirmedAppointments">0</h2>
+                    <p>Confirmed</p>
+                </div>
+                <div class="stat-box">
+                    <h2 id="adminTotalPatients">0</h2>
+                    <p>Patients</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="website-section">
+            <div class="table-container">
+                <div class="table-header-row">
+                    <h2>Upcoming appointments</h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Doctor</th>
+                            <th>Patient</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminAppointmentsBody">
+                        <tr>
+                            <td colspan="5">Loading appointments...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="website-section">
+            <div class="table-container">
+                <div class="table-header-row">
+                    <h2>Patient records</h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminPatientsBody">
+                        <tr>
+                            <td colspan="4">Loading patients...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="website-section">
+            <div class="table-container">
+                <div class="table-header-row table-header-row--space-between">
+                    <h2>Doctor management</h2>
+                    <button type="button" class="btn btn-small" id="openDoctorModalBtn"><i class="fa-solid fa-user-plus"></i> Add Doctor</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Department</th>
+                            <th>Availability</th>
+                            <th>Fee</th>
+                            <th>Specialty</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminDoctorsBody">
+                        <tr>
+                            <td colspan="7">Loading doctors...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div class="modal" id="doctorModal" aria-hidden="true" role="dialog" aria-labelledby="doctorModalTitle">
+    <div class="modal-content auth-card" style="max-width: 620px;">
+        <button type="button" class="modal-close" id="closeDoctorModalBtn" aria-label="Close add doctor dialog">×</button>
+        <div class="auth-header">
+            <i class="fa-solid fa-user-doctor auth-icon-large"></i>
+            <h2 id="doctorModalTitle">Add Doctor</h2>
+            <p>Create or update a specialist profile for the hospital directory.</p>
+        </div>
+
+        <form id="doctorForm" class="auth-form">
+            <div class="form-group">
+                <label for="doctorName">Doctor Name</label>
+                <input id="doctorName" type="text" required>
+            </div>
+            <div class="form-group">
+                <label for="doctorDepartment">Department</label>
+                <input id="doctorDepartment" type="text" required>
+            </div>
+            <div class="form-group">
+                <label for="doctorSpecialty">Specialty</label>
+                <textarea id="doctorSpecialty" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="doctorFee">Consultation Fee</label>
+                <input id="doctorFee" type="text" placeholder="Rs 800" required>
+            </div>
+            <div class="form-group">
+                <label for="doctorAvailability">Availability</label>
+                <input id="doctorAvailability" type="text" placeholder="Mon-Fri" required>
+            </div>
+            <div class="form-group">
+                <label for="doctorPhoto">Photo URL</label>
+                <input id="doctorPhoto" type="url" placeholder="https://example.com/doctor.jpg">
+            </div>
+            <button type="submit" class="btn-auth"><i class="fa-solid fa-floppy-disk"></i> Save Doctor</button>
+        </form>
+    </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

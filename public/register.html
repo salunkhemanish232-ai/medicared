@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicare - Register</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="auth-body">
+
+<main class="auth-main">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <i class="fa-solid fa-user-plus auth-icon"></i>
+                <span class="tag tag--primary">Patient Registration</span>
+                <h2>Create your hospital account</h2>
+                <p class="subtitle">Join Medicare to book appointments, consult specialists, and manage your care online.</p>
+            </div>
+
+            <div id="registerSuccess" class="success-banner" aria-live="polite">
+                <i class="fa-solid fa-circle-check"></i>
+                <span id="registerSuccessText"></span>
+            </div>
+
+            <form class="auth-form" id="registerForm" novalidate>
+                <div class="form-group">
+                    <label for="name"><i class="fa-solid fa-user"></i> Full Name</label>
+                    <input type="text" id="name" name="name" placeholder="John Doe" required>
+                    <small id="nameError"></small>
+                </div>
+
+                <div class="form-group">
+                    <label for="email"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="johndoe@example.com" required>
+                    <small id="emailError"></small>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone"><i class="fa-solid fa-phone"></i> Phone Number</label>
+                    <input type="tel" id="phone" name="phone" placeholder="+91 98765 43210" required>
+                    <small id="phoneError"></small>
+                </div>
+
+                <div class="form-group">
+                    <label for="age"><i class="fa-solid fa-cake-candles"></i> Age</label>
+                    <input type="number" id="age" name="age" min="1" max="120" placeholder="35" required>
+                    <small id="ageError"></small>
+                </div>
+
+                <div class="form-group">
+                    <label for="password"><i class="fa-solid fa-lock"></i> Password</label>
+                    <input type="password" id="password" name="password" placeholder="Create strong password" required>
+                    <small id="passwordError"></small>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword"><i class="fa-solid fa-lock"></i> Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm password" required>
+                    <small id="confirmError"></small>
+                </div>
+
+                <button type="submit" class="btn-auth" id="registerBtn">
+                    <i class="fa-solid fa-user-plus"></i> <span>Register</span>
+                </button>
+                
+                <div id="formError" class="form-error" role="alert"></div>
+            </form>
+
+            <div class="auth-footer">
+                <p>Already have an account? <a href="login.html">Login here</a></p>
+                <div class="auth-footer-links">
+                    <a href="index.html" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Back Home</a>
+                    <a href="appointments.html" class="btn btn-outline"><i class="fa-solid fa-calendar-plus"></i> Book Appointment</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
+
+
+

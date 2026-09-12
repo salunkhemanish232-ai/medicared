@@ -1,0 +1,136 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patients Registry - Medicare</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="container">
+    <aside class="sidebar">
+        <div class="logo-area">
+            <i class="fa-solid fa-hospital-user logo-icon"></i>
+            <h2 class="logo">Medi<span>care</span></h2>
+        </div>
+        <ul class="nav-links">
+            <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
+            <li><a href="dashboard.html"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            <li class="active"><a href="patients.html"><i class="fa-solid fa-user-injured"></i> Patients</a></li>
+            <li><a href="doctors.html"><i class="fa-solid fa-user-md"></i> Doctors</a></li>
+            <li><a href="appointments.html"><i class="fa-solid fa-calendar-check"></i> Appointments</a></li>
+        </ul>
+        <div class="sidebar-footer"><p>Medicare Portal</p></div>
+    </aside>
+
+    <main class="main">
+        <div class="page-header">
+            <div>
+                <span class="tag"><i class="fa-solid fa-user-injured"></i> Patient Registry</span>
+                <h1>Patients Registry</h1>
+                <p class="subtitle">Maintain patient profiles, demographic records, and quick desk updates.</p>
+            </div>
+            <button id="openModalBtn" class="btn primary-action">
+                <i class="fa-solid fa-user-plus"></i> Add Patient
+            </button>
+        </div>
+
+        <section class="opd-summary-grid patient-summary-grid" aria-label="Patient registry summary">
+            <div class="opd-summary-card">
+                <span><i class="fa-solid fa-users"></i></span>
+                <div>
+                    <p>Total Patients</p>
+                    <strong id="patientTotalCount">0</strong>
+                </div>
+            </div>
+            <div class="opd-summary-card">
+                <span><i class="fa-solid fa-id-card-clip"></i></span>
+                <div>
+                    <p>Registry Mode</p>
+                    <strong>Live</strong>
+                </div>
+            </div>
+            <div class="opd-summary-card">
+                <span><i class="fa-solid fa-shield-heart"></i></span>
+                <div>
+                    <p>Records</p>
+                    <strong>Local</strong>
+                </div>
+            </div>
+        </section>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="patients-table-body">
+                    <tr>
+                        <td>P001</td>
+                        <td>Rahul Sharma</td>
+                        <td>25</td>
+                        <td>Male</td>
+                        <td>
+                            <button class="table-action-btn"><i class="fa-solid fa-pen"></i> Edit</button>
+                            <button class="table-action-btn danger"><i class="fa-solid fa-trash"></i> Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<div id="patientModal" class="modal">
+    <div class="modal-content">
+        <div class="auth-header">
+            <i class="fa-solid fa-user-plus auth-icon-large"></i>
+            <h2 id="patientModalTitle">Add Patient</h2>
+            <p>Create a clean registry entry for the front desk.</p>
+        </div>
+
+        <form id="patientForm" class="auth-form">
+            <div class="form-group">
+                <label for="ptName">Patient Name</label>
+                <input type="text" id="ptName" placeholder="Enter full name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="ptAge">Age</label>
+                <input type="number" id="ptAge" placeholder="Age" required>
+            </div>
+
+            <div class="form-group">
+                <label for="ptGender">Gender</label>
+                <select id="ptGender">
+                    <option>Male</option>
+                    <option>Female</option>
+                    <option>Other</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-auth">
+                <i class="fa-solid fa-circle-check"></i> Save Patient
+            </button>
+
+            <button type="button" id="closeModalBtn" class="btn-secondary">
+                Cancel
+            </button>
+        </form>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
+
+
+

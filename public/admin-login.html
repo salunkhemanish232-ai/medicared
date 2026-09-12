@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin login for Medicare hospital management dashboard.">
+    <title>Medicare - Admin Login</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="auth-body">
+<main class="auth-main">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <i class="fa-solid fa-user-shield auth-icon"></i>
+                <span class="tag tag--primary">Medicare Admin Portal</span>
+                <h1>Staff sign in</h1>
+                <p class="subtitle">Access hospital records, appointments, and patient summaries.</p>
+            </div>
+            <div id="adminLoginSuccess" class="success-banner" aria-live="polite"></div>
+            <form class="auth-form" id="adminLoginForm" novalidate>
+                <div class="form-group">
+                    <label for="adminEmail"><i class="fa-solid fa-envelope"></i> Admin Email</label>
+                    <input type="email" id="adminEmail" required autocomplete="email" placeholder="admin@medicare.com">
+                </div>
+                <div class="form-group">
+                    <label for="adminPassword"><i class="fa-solid fa-lock"></i> Password</label>
+                    <input type="password" id="adminPassword" required autocomplete="current-password" placeholder="Enter admin password">
+                </div>
+                <div id="adminLoginError" class="form-error" role="alert"></div>
+                <button type="submit" class="btn-auth"><i class="fa-solid fa-right-to-bracket"></i> Sign In as Admin</button>
+            </form>
+            <div class="auth-footer">
+                <p>Use the default admin login:</p>
+                <p><strong>Email:</strong> admin@medicare.com</p>
+                <p><strong>Password:</strong> admin123</p>
+                <a href="login.html" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Patient Login</a>
+            </div>
+        </div>
+    </div>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
