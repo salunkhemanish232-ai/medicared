@@ -563,5 +563,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(error.message);
             }
         });
+
+        renderAdminDashboard();
+        window.setInterval(() => {
+            if (!document.hidden) renderAdminDashboard();
+        }, 10000);
     }
 });
