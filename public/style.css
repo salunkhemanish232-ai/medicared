@@ -592,11 +592,20 @@ table th {
 }
 
 .doctors-public-grid .doctor-portrait {
-    height: 340px !important;
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1;
+    border: 0 !important;
+    border-radius: 0 !important;
+    clip-path: none !important;
 }
 
 .doctors-public-grid .doctor-portrait img {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
     object-fit: cover;
+    object-position: center top;
 }
 
 .doctors-public-grid .doctor-card-content {
@@ -636,7 +645,9 @@ table th {
     }
 
     .doctors-public-grid .doctor-portrait {
-        height: 300px !important;
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 1 / 1;
     }
 
     .doctors-public-grid .doctor-card-content {
