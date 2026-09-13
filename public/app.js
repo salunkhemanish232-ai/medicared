@@ -144,12 +144,16 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const result = await api('/api/register', { method: 'POST', body: JSON.stringify({ name: form.get('name'), email: form.get('email'), phone: form.get('phone'), age: form.get('age'), password: form.get('password') }) });
             localStorage.setItem('medicareCurrentUser', JSON.stringify(result.user));
-            showSuccess('#registerSuccess', 'Registration successful. Your account is ready. Redirecting to your dashboard...');
-            setTimeout(() => { window.location.href = 'dashboard.html'; }, 900);
+            showSuccess('#registerSuccess', 'Registration successful. Your account is secure and ready.');
+            const completion = document.querySelector('#registrationComplete');
+            completion?.classList.add('is-visible');
+            completion?.setAttribute('aria-hidden', 'false');
+            setTimeout(() => { window.location.href = 'appointments.html'; }, 2200);
         } catch (error) {
             showError('#formError', error.message || 'Registration failed. Please try again.');
             setLoading(button, false);
         }
+
     });
 
     const loginForm = document.querySelector('#loginForm');
@@ -637,6 +641,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (adminDoctorsBody) adminDoctorsBody.innerHTML = `<tr><td colspan="7">${error.message}</td></tr>`;
             }
         }
+
+        window.setInterval(renderAdminUsers, 30000);
 
         if (openDoctorModalBtn) {
             openDoctorModalBtn.addEventListener('click', () => {

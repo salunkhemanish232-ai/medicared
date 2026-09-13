@@ -331,6 +331,60 @@
     background: #fff3dc;
 }
 
+.registration-complete {
+    display: none;
+    position: absolute;
+    inset: 22px;
+    z-index: 4;
+    place-content: center;
+    justify-items: center;
+    gap: 12px;
+    padding: 28px;
+    border: 1px solid rgba(255,255,255,.8);
+    border-radius: 18px;
+    background: rgba(255,255,255,.97);
+    text-align: center;
+    box-shadow: 0 24px 60px rgba(8,47,73,.2);
+}
+
+.registration-complete.is-visible {
+    display: grid;
+    animation: registrationPop .35s ease both;
+}
+
+.registration-complete-icon {
+    display: grid;
+    width: 66px;
+    height: 66px;
+    place-items: center;
+    border-radius: 22px;
+    color: #fff;
+    background: linear-gradient(135deg, #0d9488, #0284c7);
+    font-size: 26px;
+}
+
+.registration-complete h2 {
+    color: #082f49;
+}
+
+.registration-complete p {
+    max-width: 300px;
+    color: #52677a;
+}
+
+.registration-complete-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+@keyframes registrationPop {
+    from { opacity: 0; transform: scale(.94) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 .auth-benefits {
     display: flex;
     flex-wrap: wrap;
