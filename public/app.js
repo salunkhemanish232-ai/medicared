@@ -49,6 +49,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const element = document.querySelector(selector);
         if (element) { element.textContent = ''; element.style.display = 'none'; }
     };
+    const showToast = (message, type = 'success') => {
+        const toast = document.createElement('div');
+        toast.className = `site-toast site-toast--${type}`;
+        toast.setAttribute('role', 'status');
+        toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}"></i><span>${escapeHtml(message)}</span>`;
+        document.body.appendChild(toast);
+        window.setTimeout(() => toast.classList.add('is-visible'), 20);
+        window.setTimeout(() => { toast.classList.remove('is-visible'); window.setTimeout(() => toast.remove(), 250); }, 3200);
+    };
     const setLoading = (button, loading, label) => {
         if (!button) return;
         button.disabled = loading;
@@ -477,17 +486,23 @@ document.addEventListener('DOMContentLoaded', () => {
             gender: document.querySelector('#ptGender').value
         };
 
-        if (editingPatientId) {
-            await api(`/api/patients/${editingPatientId}`, { method: 'PUT', body: JSON.stringify(payload) });
-        } else {
-            await api('/api/patients', { method: 'POST', body: JSON.stringify(payload) });
+        if (!payload.name.trim() || !Number.isInteger(Number(payload.age)) || Number(payload.age) < 1 || !payload.gender) {
+            return showToast('Complete the patient name, age, and gender.', 'error');
         }
-
-        patientForm.reset();
-        patientModal.style.setProperty('display', 'none', 'important');
-        editingPatientId = null;
-        if (patientModalTitle) patientModalTitle.textContent = 'Add Patient';
-        renderPatients();
+        try {
+            if (editingPatientId) {
+                await api(`/api/patients/${editingPatientId}`, { method: 'PUT', body: JSON.stringify(payload) });
+                showToast('Patient record updated successfully.');
+            } else {
+                await api('/api/patients', { method: 'POST', body: JSON.stringify(payload) });
+                showToast('Patient record created successfully.');
+            }
+            patientForm.reset();
+            patientModal.style.setProperty('display', 'none', 'important');
+            editingPatientId = null;
+            if (patientModalTitle) patientModalTitle.textContent = 'Add Patient';
+            renderPatients();
+        } catch (error) { showToast(error.message, 'error'); }
     });
     renderPatients().catch(() => {});
 
@@ -708,6 +723,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             try {
+                const wasEditingDoctor = Boolean(editingDoctorId);
                 if (editingDoctorId) {
                     await api(`/api/doctors/${editingDoctorId}`, { method: 'PUT', body: JSON.stringify(payload) });
                 } else {
@@ -717,9 +733,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 editingDoctorId = null;
                 if (doctorModalTitle) doctorModalTitle.textContent = 'Add Doctor';
                 if (doctorModal) doctorModal.style.setProperty('display', 'none', 'important');
+                showToast(wasEditingDoctor ? 'Doctor profile updated successfully.' : 'Doctor profile created successfully.');
                 renderAdminDashboard();
             } catch (error) {
-                alert(error.message);
+                showToast(error.message, 'error');
             }
         });
 
