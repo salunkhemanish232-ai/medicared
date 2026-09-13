@@ -437,6 +437,143 @@
     }
 }
 
+/* Final shared hospital system polish */
+:root {
+    --hospital-ink: #082f49;
+    --hospital-teal: #0d9488;
+    --hospital-blue: #0284c7;
+    --hospital-line: rgba(148, 163, 184, .24);
+    --hospital-shadow: 0 18px 42px rgba(8, 47, 73, .08);
+}
+
+body {
+    color: var(--hospital-ink);
+    background:
+        radial-gradient(circle at 0 0, rgba(14, 165, 233, .1), transparent 26rem),
+        radial-gradient(circle at 100% 14%, rgba(20, 184, 166, .09), transparent 24rem),
+        #f7fbfd !important;
+}
+
+.page-hero,
+.simple-page-hero,
+.dashboard-header,
+.gallery-showcase,
+.store-hero {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--hospital-line) !important;
+    box-shadow: var(--hospital-shadow) !important;
+}
+
+.page-hero::after,
+.simple-page-hero::after,
+.dashboard-header::after {
+    position: absolute;
+    right: -70px;
+    bottom: -100px;
+    width: 230px;
+    height: 230px;
+    border: 24px solid rgba(13, 148, 136, .08);
+    border-radius: 50%;
+    content: '';
+    pointer-events: none;
+}
+
+.page-hero h1,
+.simple-page-hero h1,
+.dashboard-header h1,
+.website-section h2 {
+    color: var(--hospital-ink);
+    letter-spacing: -.025em;
+}
+
+.website-section {
+    max-width: 1240px;
+}
+
+.website-section > .section-headline,
+.website-section > .table-container,
+.website-section > .table-toolbar {
+    position: relative;
+}
+
+.feature-card,
+.service-card,
+.care-tool-card,
+.gallery-preview-card,
+.store-card,
+.info-panel,
+.table-container,
+.form-card-container,
+.metric-card {
+    border-color: var(--hospital-line) !important;
+    box-shadow: var(--hospital-shadow) !important;
+}
+
+button,
+.btn,
+input,
+select,
+textarea {
+    font-family: inherit;
+}
+
+button,
+.btn {
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+}
+
+button:hover:not(:disabled),
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+table th {
+    background: linear-gradient(135deg, #0b5e8a, #0d9488) !important;
+}
+
+.site-footer {
+    margin-top: 52px;
+    border-top: 1px solid rgba(255, 255, 255, .08);
+    background: #082f49 !important;
+    color: #cfe7ef;
+}
+
+@media (max-width: 640px) {
+    .page-hero,
+    .simple-page-hero,
+    .dashboard-header {
+        margin: 18px 12px 0 !important;
+        padding: 28px 20px !important;
+        border-radius: 22px !important;
+    }
+
+    .page-hero h1,
+    .simple-page-hero h1,
+    .dashboard-header h1 {
+        font-size: clamp(2rem, 10vw, 3rem);
+        line-height: 1.04;
+    }
+
+    .website-section {
+        padding: 34px 16px;
+    }
+
+    .website-section h2 {
+        font-size: 1.65rem;
+        line-height: 1.1;
+    }
+
+    .table-container {
+        border-radius: 16px;
+    }
+
+    .site-footer {
+        margin-top: 24px;
+        padding: 26px 16px;
+    }
+}
+
 .activity-live {
     display: inline-flex;
     align-items: center;
