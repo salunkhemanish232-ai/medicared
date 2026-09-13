@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.setTimeout(() => {
             siteLoader.classList.add('is-finished');
             window.setTimeout(() => siteLoader.remove(), 450);
-        }, 3000);
+        }, 2000);
     }
 
     let session = null;
