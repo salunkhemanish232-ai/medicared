@@ -3057,6 +3057,35 @@ input,select,textarea,.track-input,.form-group input,.form-group select,.form-gr
     .facility-gallery figure{ height:250px; }
 }
 
+/* Final mobile product polish */
+@media (max-width: 900px) {
+    .navbar { padding: 10px 16px; }
+    .navbar-container { position: relative; }
+    .menu-toggle { display: inline-grid; place-items: center; flex: 0 0 44px; }
+    .menu { gap: 4px; }
+    .menu.is-open { position: absolute; top: calc(100% + 8px); left: 0; right: 0; width: 100%; }
+    .menu.is-open a { min-height: 46px; justify-content: flex-start; padding-inline: 16px; }
+    .website-section, .gallery-section { padding-block: 44px; }
+    .table-container { padding: 14px; }
+    .table-header-row { gap: 12px; flex-wrap: wrap; }
+}
+
+@media (max-width: 640px) {
+    body { overflow-x: hidden; }
+    .top-banner { font-size: 11px; gap: 4px; padding-block: 8px; }
+    .logo { font-size: 1.18rem; }
+    .site-hero, .gallery-hero { padding-inline: 16px; }
+    .site-hero h1, body:has(.site-hero) .site-hero h1 { font-size: clamp(2.35rem, 13vw, 3.7rem); }
+    .site-hero-panel { grid-template-columns: 1fr; }
+    .section-headline h2 { font-size: 2rem; }
+    .feature-card, .room-card-content, .care-tool-card { padding: 20px !important; }
+    .gallery-preview-card, .gallery-preview-card--wide { min-height: 230px; }
+    .gallery-hero-image { height: 270px; }
+    .data-table, table { min-width: 640px; }
+    .table-container { overflow-x: auto; }
+    .btn, .btn-auth, button { min-height: 46px; }
+}
+
 /* PulseCare Live home animation */
 .hero .hero-text{
     display:grid;
