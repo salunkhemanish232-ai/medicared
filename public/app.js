@@ -277,6 +277,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (storeLink) storeLink.textContent = copy.store;
     });
 
+    const revealItems = document.querySelectorAll('.home-simple .website-section, .home-simple .simple-stats');
+    if (revealItems.length && 'IntersectionObserver' in window) {
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('is-revealed');
+                observer.unobserve(entry.target);
+            });
+        }, { threshold: 0.12 });
+        revealItems.forEach((item) => revealObserver.observe(item));
+    } else {
+        revealItems.forEach((item) => item.classList.add('is-revealed'));
+    }
+
     function createCareOverlays() {
         if (document.querySelector('#medicare-care-tools')) return;
         const container = document.createElement('div');

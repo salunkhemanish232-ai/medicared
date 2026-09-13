@@ -3110,6 +3110,81 @@ input,select,textarea,.track-input,.form-group input,.form-group select,.form-gr
     .hero-status-line { font-size: .66rem; }
 }
 
+/* Homepage motion layer */
+.home-simple .website-section,
+.home-simple .simple-stats {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity .75s ease, transform .75s cubic-bezier(.22, 1, .36, 1);
+}
+
+.home-simple .website-section.is-revealed,
+.home-simple .simple-stats.is-revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.home-simple .site-hero {
+    animation: hero-image-drift 18s ease-in-out infinite alternate;
+}
+
+.home-simple .hero-kicker { animation: medicare-rise .7s .08s both; }
+.home-simple .site-hero h1 { animation: medicare-rise .75s .18s both; }
+.home-simple .site-hero p { animation: medicare-rise .75s .3s both; }
+.home-simple .hero-actions { animation: medicare-rise .75s .42s both; }
+.home-simple .hero-trust { animation: medicare-rise .75s .54s both; }
+
+.home-simple .hero-actions .btn:first-child {
+    position: relative;
+    overflow: hidden;
+}
+
+.home-simple .hero-actions .btn:first-child::after {
+    position: absolute;
+    inset: 0 auto 0 -80%;
+    width: 55%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.38), transparent);
+    content: '';
+    transform: skewX(-18deg);
+    animation: button-sheen 4.8s 1.5s ease-in-out infinite;
+}
+
+.home-simple .site-hero-panel { animation: panel-float 7s ease-in-out 1s infinite; }
+.home-simple .simple-card-grid > :nth-child(2) { transition-delay: .08s; }
+.home-simple .simple-card-grid > :nth-child(3) { transition-delay: .16s; }
+
+@keyframes hero-image-drift {
+    from { background-position: center center; }
+    to { background-position: 54% center; }
+}
+
+@keyframes panel-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-7px); }
+}
+
+@keyframes button-sheen {
+    0%, 45% { left: -80%; }
+    65%, 100% { left: 140%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-simple .website-section,
+    .home-simple .simple-stats,
+    .home-simple .site-hero,
+    .home-simple .site-hero-panel,
+    .home-simple .hero-kicker,
+    .home-simple .site-hero h1,
+    .home-simple .site-hero p,
+    .home-simple .hero-actions,
+    .home-simple .hero-trust {
+        opacity: 1;
+        transform: none;
+        animation: none;
+        transition: none;
+    }
+}
+
 .live-data-status{
     display:inline-flex;
     align-items:center;
