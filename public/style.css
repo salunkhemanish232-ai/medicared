@@ -443,6 +443,12 @@
     color: #52677a;
 }
 
+.registration-created-at {
+    color: #087f83;
+    font-size: 12px;
+    font-weight: 800;
+}
+
 .registration-complete-actions {
     display: flex;
     flex-wrap: wrap;

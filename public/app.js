@@ -146,9 +146,13 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('medicareCurrentUser', JSON.stringify(result.user));
             showSuccess('#registerSuccess', 'Registration successful. Your account is secure and ready.');
             const completion = document.querySelector('#registrationComplete');
+            const createdAt = document.querySelector('#registrationCreatedAt');
+            if (createdAt && result.user.createdAt) {
+                createdAt.textContent = `Created on ${new Date(result.user.createdAt).toLocaleString()}`;
+            }
             completion?.classList.add('is-visible');
             completion?.setAttribute('aria-hidden', 'false');
-            setTimeout(() => { window.location.href = 'appointments.html'; }, 2200);
+            setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
         } catch (error) {
             showError('#formError', error.message || 'Registration failed. Please try again.');
             setLoading(button, false);
@@ -513,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>${user.email}</td>
                         <td>${user.phone}</td>
                         <td>${user.age}</td>
-                        <td>${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}</td>
+                        <td>${user.createdAt ? new Date(user.createdAt).toLocaleString() : 'Unknown'}</td>
                         <td>${user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : 'Not logged in'}</td>
                         <td><span class="activity-pill ${user.lastLoginAt ? 'is-active' : 'is-new'}"><i class="fa-solid fa-circle"></i> ${user.lastLoginAt ? 'Active' : 'New'}</span></td>
                     </tr>
