@@ -9,7 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const api = async (path, options = {}) => {
         let response;
         try {
-            response = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...options });
+            const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+            const adminToken = localStorage.getItem('medicareAdminToken');
+            if (adminToken) headers.Authorization = `Bearer ${adminToken}`;
+            response = await fetch(path, { ...options, headers });
         } catch (error) {
             throw new Error('Cannot reach the Medicare server. Please check your connection and try again.');
         }
@@ -103,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         localStorage.removeItem('medicareCurrentUser');
         localStorage.removeItem('medicareUserRole');
+        localStorage.removeItem('medicareAdminToken');
         window.location.href = 'index.html';
     });
 
@@ -168,6 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await api('/api/admin/login', { method: 'POST', body: JSON.stringify({ email: email.value, password: password.value }) });
             localStorage.setItem('medicareCurrentUser', JSON.stringify(result.user));
             localStorage.setItem('medicareUserRole', 'admin');
+            localStorage.setItem('medicareAdminToken', result.token);
             showSuccess('#adminLoginSuccess', 'Admin login successful. Redirecting to the staff dashboard...');
             setTimeout(() => { window.location.href = 'admin-dashboard.html'; }, 900);
         } catch (error) {

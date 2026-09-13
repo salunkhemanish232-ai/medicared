@@ -90,6 +90,7 @@ const STORE_PRODUCTS = [
 
 const VALID_STATUS = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
 let mysqlPool = null;
+const adminSessions = new Map();
 
 function getDefaultDatabase() {
     return {
@@ -397,9 +398,35 @@ function sanitizeEmail(email) {
     return String(email || '').trim().toLowerCase();
 }
 
+function isAdminRequest(request) {
+    const authorization = String(request.headers.authorization || '');
+    const token = authorization.startsWith('Bearer ') ? authorization.slice(7) : '';
+    const session = token ? adminSessions.get(token) : null;
+    if (!session) return false;
+    if (Date.now() - session.createdAt > 8 * 60 * 60 * 1000) {
+        adminSessions.delete(token);
+        return false;
+    }
+    return true;
+}
+
+function requiresAdmin(route, method) {
+    return (method === 'GET' && ['/api/admin/summary', '/api/users', '/api/messages', '/api/patients'].includes(route))
+        || (route.startsWith('/api/patients/') && ['PUT', 'DELETE'].includes(method))
+        || (route.startsWith('/api/doctors/') && ['PUT', 'DELETE'].includes(method))
+        || (method === 'POST' && ['/api/patients', '/api/doctors'].includes(route))
+        || (method === 'DELETE' && route.startsWith('/api/messages/'))
+        || (method === 'PUT' && route.startsWith('/api/appointments/'));
+}
+
 async function handleApi(request, response, requestUrl) {
     const route = requestUrl.pathname;
     const method = request.method;
+
+    if (requiresAdmin(route, method) && !isAdminRequest(request)) {
+        return sendError(response, 401, 'Admin authentication is required for this action.');
+    }
+
     const database = await readDatabase();
 
     if (method === 'GET' && route === '/api/health') {
@@ -498,7 +525,9 @@ async function handleApi(request, response, requestUrl) {
             return sendError(response, 401, 'Admin email or password is incorrect.');
         }
 
-        return sendJson(response, 200, { user: publicAdmin(admin) });
+        const token = crypto.randomBytes(32).toString('hex');
+        adminSessions.set(token, { adminId: admin.id, createdAt: Date.now() });
+        return sendJson(response, 200, { user: publicAdmin(admin), token });
     }
 
     if (method === 'GET' && route === '/api/appointments') {
