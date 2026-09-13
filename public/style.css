@@ -748,6 +748,22 @@ table th {
     text-align: center;
 }
 
+.about-story-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr); gap: 28px; align-items: stretch; }
+.about-story-copy, .about-story-panel { padding: 34px; border: 1px solid var(--hospital-line); border-radius: 22px; background: rgba(255,255,255,.9); box-shadow: var(--hospital-shadow); }
+.about-story-copy h2 { margin: 12px 0 16px; font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.02; }
+.about-story-copy p { max-width: 640px; margin: 0 0 14px; color: #52677a; line-height: 1.7; }
+.about-story-copy .btn { margin-top: 12px; }
+.about-story-panel { display: grid; gap: 12px; align-content: center; background: linear-gradient(145deg, #e8f8f4, #eaf6fb); }
+.about-story-panel div { display: grid; grid-template-columns: 44px 1fr; gap: 2px 12px; align-items: center; padding: 16px; border-radius: 14px; background: rgba(255,255,255,.78); }
+.about-story-panel i { grid-row: span 2; display: grid; width: 44px; height: 44px; place-items: center; border-radius: 13px; color: #087f83; background: #ccfbf1; }
+.about-story-panel strong { color: var(--hospital-ink); }
+.about-story-panel span { color: #52677a; font-size: .86rem; }
+.about-journey-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.about-journey-grid > div { padding: 24px; border-top: 3px solid var(--hospital-teal); border-radius: 14px; background: #fff; box-shadow: var(--hospital-shadow); }
+.about-journey-grid span { color: var(--hospital-teal); font-weight: 900; }
+.about-journey-grid strong { display: block; margin: 14px 0 8px; color: var(--hospital-ink); }
+.about-journey-grid p { color: #52677a; line-height: 1.55; }
+
 .site-toast {
     position: fixed;
     right: 22px;
@@ -777,6 +793,8 @@ table th {
     .admin-message-heading { align-items: flex-start; flex-direction: column; gap: 8px; }
     .admin-message-card { padding: 15px; }
     .site-toast { right: 16px; bottom: 16px; left: 16px; max-width: none; }
+    .about-story-grid, .about-journey-grid { grid-template-columns: 1fr; }
+    .about-story-copy, .about-story-panel { padding: 24px 20px; }
 }
 
 .registration-complete {
