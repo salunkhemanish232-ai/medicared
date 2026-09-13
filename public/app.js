@@ -245,6 +245,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderPublicDoctors();
 
+    const storeProducts = document.querySelector('#storeProducts');
+    if (storeProducts) {
+        const categorySelect = document.querySelector('#storeCategory');
+        let products = [];
+        const renderStore = () => {
+            const category = categorySelect?.value || 'all';
+            const visible = products.filter((product) => category === 'all' || product.category === category);
+            storeProducts.innerHTML = visible.map((product) => `
+                <article class="store-card"><div class="store-icon"><i class="fa-solid ${product.icon}"></i></div><span class="eyebrow">${product.category}</span><h3>${product.name}</h3><p>${product.description}</p><div class="store-card-footer"><strong>${product.price}</strong><button type="button" class="btn btn-small" data-open-chat><i class="fa-solid fa-message"></i> Ask about it</button></div></article>
+            `).join('');
+            document.querySelectorAll('[data-open-chat]').forEach((button) => button.addEventListener('click', () => document.querySelector('#chatModal')?.classList.add('is-visible')));
+        };
+        api('/api/store').then((result) => {
+            products = result.products || [];
+            [...new Set(products.map((product) => product.category))].forEach((category) => categorySelect?.insertAdjacentHTML('beforeend', `<option value="${category}">${category}</option>`));
+            renderStore();
+        }).catch((error) => { storeProducts.innerHTML = `<div class="form-error" style="display:block;">${error.message}</div>`; });
+        categorySelect?.addEventListener('change', renderStore);
+    }
+
+    const languageSelect = document.querySelector('#languageSelect');
+    const languageCopy = { en: { hero: 'Quality care for every patient, every day.', button: 'Book Appointment', store: 'Care Store' }, hi: { hero: 'हर मरीज के लिए हर दिन बेहतर देखभाल।', button: 'अपॉइंटमेंट बुक करें', store: 'केयर स्टोर' } };
+    languageSelect?.addEventListener('change', () => {
+        const copy = languageCopy[languageSelect.value] || languageCopy.en;
+        const heroTitle = document.querySelector('.site-hero h1');
+        const primaryButton = document.querySelector('.site-hero .hero-actions .btn');
+        const storeLink = [...document.querySelectorAll('.nav-link')].find((link) => link.getAttribute('href') === 'store.html');
+        if (heroTitle) heroTitle.textContent = copy.hero;
+        if (primaryButton) primaryButton.innerHTML = `<i class="fa-solid fa-calendar-plus"></i> ${copy.button}`;
+        if (storeLink) storeLink.textContent = copy.store;
+    });
+
     function createCareOverlays() {
         if (document.querySelector('#medicare-care-tools')) return;
         const container = document.createElement('div');

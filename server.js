@@ -79,6 +79,15 @@ const DEFAULT_DOCTORS = [
     }
 ];
 
+const STORE_PRODUCTS = [
+    { id: 'M001', name: 'Digital thermometer', category: 'Home monitoring', price: 'Rs 249', icon: 'fa-temperature-half', description: 'Fast temperature checks for home care.' },
+    { id: 'M002', name: 'Pulse oximeter', category: 'Home monitoring', price: 'Rs 899', icon: 'fa-heart-pulse', description: 'Track oxygen saturation and pulse rate.' },
+    { id: 'M003', name: 'First-aid essentials kit', category: 'Care essentials', price: 'Rs 599', icon: 'fa-kit-medical', description: 'Everyday dressing and basic care supplies.' },
+    { id: 'M004', name: 'Reusable hot and cold pack', category: 'Recovery', price: 'Rs 199', icon: 'fa-snowflake', description: 'Comfort support for everyday aches and recovery.' },
+    { id: 'M005', name: 'Surgical face masks', category: 'Protection', price: 'Rs 149', icon: 'fa-head-side-mask', description: 'Comfortable protection for visits and travel.' },
+    { id: 'M006', name: 'Electrolyte care pack', category: 'Wellness', price: 'Rs 99', icon: 'fa-glass-water', description: 'Hydration support. Ask your clinician when needed.' }
+];
+
 const VALID_STATUS = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
 let mysqlPool = null;
 
@@ -399,6 +408,10 @@ async function handleApi(request, response, requestUrl) {
 
     if (method === 'GET' && route === '/api/doctors') {
         return sendJson(response, 200, { doctors: database.doctors });
+    }
+
+    if (method === 'GET' && route === '/api/store') {
+        return sendJson(response, 200, { products: STORE_PRODUCTS });
     }
 
     if (method === 'GET' && route === '/api/dashboard/summary') {
