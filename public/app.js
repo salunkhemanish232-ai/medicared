@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!response.ok) throw new Error(data.error || 'Request failed.');
         return data;
     };
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
     const showError = (selector, message) => {
         const element = document.querySelector(selector);
         if (element) {
@@ -498,6 +499,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminAppointmentsBody = document.querySelector('#adminAppointmentsBody');
     const adminPatientsBody = document.querySelector('#adminPatientsBody');
     const adminUsersBody = document.querySelector('#adminUsersBody');
+    const adminMessagesList = document.querySelector('#adminMessagesList');
+    const refreshMessagesBtn = document.querySelector('#refreshMessagesBtn');
     const refreshUsersBtn = document.querySelector('#refreshUsersBtn');
     const adminDoctorsBody = document.querySelector('#adminDoctorsBody');
     const doctorModal = document.querySelector('#doctorModal');
@@ -532,7 +535,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        async function renderAdminMessages() {
+            if (!adminMessagesList) return;
+            try {
+                const { messages } = await api('/api/messages');
+                if (!messages.length) {
+                    adminMessagesList.innerHTML = '<div class="admin-message-empty">No contact messages yet.</div>';
+                    return;
+                }
+                adminMessagesList.innerHTML = messages.slice().reverse().map((message) => `
+                    <article class="admin-message-card">
+                        <div class="admin-message-heading">
+                            <div><strong>${escapeHtml(message.name)}</strong><a href="mailto:${encodeURIComponent(message.email)}">${escapeHtml(message.email)}</a></div>
+                                <time>${escapeHtml(message.createdAt ? new Date(message.createdAt).toLocaleString() : 'Unknown time')}</time>
+                        </div>
+                            <p>${escapeHtml(message.message)}</p>
+                    </article>
+                `).join('');
+            } catch (error) {
+                adminMessagesList.innerHTML = `<div class="admin-message-empty">Unable to load messages: ${error.message}</div>`;
+            }
+        }
+
         refreshUsersBtn?.addEventListener('click', renderAdminUsers);
+        refreshMessagesBtn?.addEventListener('click', renderAdminMessages);
 
         async function renderAdminDashboard() {
             try {
@@ -545,6 +571,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const liveStatus = document.querySelector('#adminLiveStatus');
                 if (liveStatus) liveStatus.innerHTML = `<i class="fa-solid fa-circle-check"></i> Live data synced at ${new Date().toLocaleTimeString()}`;
                 renderAdminUsers();
+                renderAdminMessages();
 
                 if (adminAppointmentsBody) {
                     const appointments = summary.upcoming || [];
@@ -652,6 +679,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         window.setInterval(renderAdminUsers, 30000);
+        window.setInterval(renderAdminMessages, 30000);
 
         if (openDoctorModalBtn) {
             openDoctorModalBtn.addEventListener('click', () => {

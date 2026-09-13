@@ -710,6 +710,49 @@ table th {
     background: #fff3dc;
 }
 
+.admin-messages-list {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.admin-message-card {
+    padding: 18px;
+    border: 1px solid var(--hospital-line);
+    border-radius: 14px;
+    background: #f8fcff;
+}
+
+.admin-message-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 10px;
+}
+
+.admin-message-heading div {
+    display: grid;
+    gap: 4px;
+}
+
+.admin-message-heading strong { color: var(--hospital-ink); }
+.admin-message-heading a { color: var(--hospital-blue); font-size: .85rem; }
+.admin-message-heading time { color: var(--muted); font-size: .78rem; }
+.admin-message-card p { color: #36526b; line-height: 1.6; white-space: pre-wrap; }
+
+.admin-message-empty {
+    padding: 24px;
+    border: 1px dashed var(--hospital-line);
+    border-radius: 14px;
+    color: var(--muted);
+    text-align: center;
+}
+
+@media (max-width: 640px) {
+    .admin-message-heading { align-items: flex-start; flex-direction: column; gap: 8px; }
+    .admin-message-card { padding: 15px; }
+}
+
 .registration-complete {
     display: none;
     position: absolute;
