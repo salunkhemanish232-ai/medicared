@@ -3043,6 +3043,73 @@ input,select,textarea,.track-input,.form-group input,.form-group select,.form-gr
 @media (max-width:900px){.store-hero{grid-template-columns:1fr}.store-grid{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:640px){.store-grid{grid-template-columns:1fr}.store-card-footer{align-items:stretch;flex-direction:column}.store-card-footer .btn{width:100%}.language-control{justify-content:center}.menu.is-open .language-control{width:100%}}
 
+/* Premium hospital homepage finish */
+.home-simple .top-banner {
+    min-height: 38px;
+    padding-block: 8px;
+    background: #092033;
+    color: #d8edf2;
+    font-size: .76rem;
+    letter-spacing: .02em;
+}
+
+.home-simple .top-banner strong { color: #fff; }
+.home-simple .top-banner i { color: #72d5c5; }
+.top-banner-live { display: inline-flex; align-items: center; gap: 8px; }
+.top-banner-live i { font-size: .48rem; animation: live-blink 1.8s ease-in-out infinite; }
+.top-banner-live span { color: #f7bd8f; font-weight: 900; }
+
+.home-simple .navbar { box-shadow: 0 12px 30px rgba(18, 49, 73, .08); }
+.home-simple .site-hero {
+    min-height: min(720px, calc(100vh - 112px));
+    border-radius: 0;
+    background:
+        linear-gradient(90deg, rgba(247, 251, 250, .98) 0%, rgba(247, 251, 250, .9) 38%, rgba(247, 251, 250, .18) 78%),
+        url("https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=1900&q=88") center/cover;
+}
+
+.home-simple .site-hero::before {
+    position: absolute;
+    right: 7%;
+    top: 15%;
+    width: 360px;
+    height: 360px;
+    border: 1px solid rgba(15, 159, 143, .28);
+    border-radius: 50%;
+    content: '';
+    animation: orbit-ring 12s linear infinite;
+}
+
+.home-simple .site-hero-content { position: relative; z-index: 1; }
+.home-simple .hero-kicker b { color: var(--medicare-coral); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
+.home-simple .site-hero h1 { max-width: 720px; color: #123149; font-size: clamp(3rem, 6.5vw, 6rem); letter-spacing: -.045em; }
+.home-simple .site-hero h1::after { display: block; width: 76px; height: 5px; margin-top: 24px; border-radius: 99px; background: var(--medicare-coral); content: ''; }
+.home-simple .site-hero p { max-width: 590px; color: #466675; font-size: 1.08rem; }
+.home-simple .site-hero-panel { position: relative; padding-top: 54px; border: 1px solid rgba(255,255,255,.85); background: rgba(255,255,255,.72); backdrop-filter: blur(18px); }
+.hero-status-line { position: absolute; top: 16px; left: 18px; right: 18px; display: flex; align-items: center; gap: 8px; color: #567281; font-size: .72rem; }
+.hero-status-line strong { color: #123149; }
+.hero-status-line span:last-child { margin-left: auto; color: var(--medicare-teal); font-weight: 900; }
+.live-dot { width: 8px; height: 8px; border-radius: 50%; background: #18a77a; box-shadow: 0 0 0 5px rgba(24,167,122,.12); animation: live-blink 1.8s ease-in-out infinite; }
+.home-simple .site-hero-panel div:not(.hero-status-line) { border: 1px solid rgba(15,159,143,.1); background: rgba(255,255,255,.8); transition: transform .25s ease, box-shadow .25s ease; }
+.home-simple .site-hero-panel div:not(.hero-status-line):hover { transform: translateX(-5px); box-shadow: 0 12px 24px rgba(18,49,73,.1); }
+
+@keyframes live-blink { 0%, 100% { opacity: 1; } 50% { opacity: .42; } }
+@keyframes orbit-ring { from { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.06); } to { transform: rotate(360deg) scale(1); } }
+
+@media (max-width: 900px) {
+    .home-simple .site-hero { min-height: 650px; background: linear-gradient(180deg, rgba(247,251,250,.95), rgba(247,251,250,.78)), url("https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=1200&q=88") center/cover; }
+    .home-simple .site-hero::before { right: -130px; top: 32%; width: 300px; height: 300px; }
+}
+
+@media (max-width: 640px) {
+    .home-simple .top-banner { justify-content: center; text-align: center; }
+    .top-banner-live { display: none; }
+    .home-simple .site-hero { min-height: 0; padding-top: 64px; padding-bottom: 44px; }
+    .home-simple .site-hero h1 { font-size: clamp(2.7rem, 14vw, 4rem); }
+    .home-simple .site-hero-panel { margin-top: 28px; }
+    .hero-status-line { font-size: .66rem; }
+}
+
 .live-data-status{
     display:inline-flex;
     align-items:center;
