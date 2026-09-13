@@ -352,6 +352,91 @@
     }
 }
 
+/* Keep the hero status row from covering the first information card. */
+.home-simple .site-hero-panel {
+    padding-top: 68px !important;
+}
+
+.home-simple .site-hero-panel .hero-status-line {
+    top: 18px;
+    right: 22px;
+    left: 22px;
+    display: flex !important;
+    min-height: 28px;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    white-space: nowrap;
+}
+
+.home-simple .site-hero-panel > div:not(.hero-status-line) {
+    min-height: 86px;
+}
+
+.home-simple .simple-stats {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    align-items: stretch;
+}
+
+.home-simple .simple-stats .stat-box {
+    display: flex;
+    min-height: 118px;
+    align-items: center;
+    gap: 16px;
+    padding: 22px !important;
+}
+
+.home-simple .simple-stats .stat-box h2 {
+    margin: 0;
+    line-height: 1;
+}
+
+.home-simple .simple-stats .stat-box p {
+    margin-top: 6px;
+}
+
+@media (max-width: 640px) {
+    .home-simple .site-hero-panel {
+        padding-top: 66px !important;
+    }
+
+    .home-simple .site-hero-panel .hero-status-line {
+        right: 18px;
+        left: 18px;
+        font-size: .7rem;
+    }
+
+    .home-simple .simple-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        padding: 16px;
+    }
+
+    .home-simple .simple-stats .stat-box {
+        min-height: 104px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 14px !important;
+    }
+
+    .home-simple .simple-stats .stat-box > i {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+    }
+
+    .home-simple .simple-stats .stat-box h2 {
+        font-size: 1.8rem;
+    }
+
+    .home-simple .simple-stats .stat-box p {
+        font-size: .76rem;
+    }
+}
+
 .activity-live {
     display: inline-flex;
     align-items: center;
