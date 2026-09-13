@@ -224,8 +224,61 @@
     animation: loaderProgress 3s linear forwards;
 }
 
+.btn-ai {
+    border: 1px solid rgba(13, 148, 136, .25);
+    color: #075e68;
+    background: linear-gradient(135deg, #e5fbf5, #dff3ff);
+    box-shadow: 0 12px 24px rgba(13, 148, 136, .14);
+}
+
+.btn-ai:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #0d9488, #0284c7);
+}
+
 @keyframes loaderProgress {
     to { transform: scaleX(1); }
+}
+
+/* Modern mobile canvas shared by every page */
+@media (max-width: 640px) {
+    body {
+        min-width: 320px;
+        background:
+            radial-gradient(circle at 100% 0, rgba(13, 148, 136, .14), transparent 28%),
+            radial-gradient(circle at 0 38%, rgba(2, 132, 199, .1), transparent 24%),
+            #f1f8f8;
+    }
+
+    body:not(.auth-body) .navbar {
+        background: rgba(255, 255, 255, .88);
+        box-shadow: 0 8px 26px rgba(8, 47, 73, .08);
+        backdrop-filter: blur(16px);
+    }
+
+    body:not(.auth-body) main,
+    body:not(.auth-body) section,
+    body:not(.auth-body) footer {
+        position: relative;
+        z-index: 1;
+    }
+
+    .site-hero,
+    .page-hero,
+    .gallery-hero,
+    .store-hero {
+        border-radius: 0 0 28px 28px;
+        box-shadow: 0 16px 34px rgba(8, 47, 73, .08);
+    }
+
+    .hero-actions .btn-ai {
+        order: 3;
+    }
+
+    .care-float-actions {
+        right: 14px;
+        bottom: 14px;
+    }
 }
 
 .auth-benefits {
@@ -9185,4 +9238,29 @@ footer {
     .data-table tr { margin-bottom: 12px; padding: 10px; border: 1px solid var(--line); border-radius: 12px; }
     .data-table td { display: flex; justify-content: space-between; gap: 12px; padding: 9px 4px; text-align: right; }
     .data-table td::before { content: attr(data-label); color: var(--muted); font-weight: 700; text-align: left; }
+}
+
+@media (max-width: 640px) {
+    body {
+        min-width: 320px;
+        background:
+            radial-gradient(circle at 100% 0, rgba(13, 148, 136, .14), transparent 28%),
+            radial-gradient(circle at 0 38%, rgba(2, 132, 199, .1), transparent 24%),
+            #f1f8f8;
+    }
+
+    body:not(.auth-body) .navbar {
+        background: rgba(255, 255, 255, .88);
+        box-shadow: 0 8px 26px rgba(8, 47, 73, .08);
+        backdrop-filter: blur(16px);
+    }
+
+    .hero-actions .btn-ai {
+        order: 3;
+    }
+
+    .care-float-actions {
+        right: 14px;
+        bottom: 14px;
+    }
 }
