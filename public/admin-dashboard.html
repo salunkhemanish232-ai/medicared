@@ -57,7 +57,11 @@
         <section class="website-section">
             <div class="table-container">
                 <div class="table-header-row">
-                    <h2>Registered users</h2>
+                    <div>
+                        <span class="eyebrow">Account activity</span>
+                        <h2>Registered users</h2>
+                    </div>
+                    <span class="activity-live"><i class="fa-solid fa-circle"></i> Live</span>
                 </div>
                 <table>
                     <thead>
@@ -66,11 +70,13 @@
                             <th>Email</th>
                             <th>Phone</th>
                             <th>Age</th>
+                            <th>Registered</th>
                             <th>Last login</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody id="adminUsersBody">
-                        <tr><td colspan="5">Loading registered users...</td></tr>
+                        <tr><td colspan="7">Loading registered users...</td></tr>
                     </tbody>
                 </table>
             </div>

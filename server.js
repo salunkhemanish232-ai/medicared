@@ -358,7 +358,7 @@ function readBody(request) {
 }
 
 function publicUser(user) {
-    return { id: user.id, name: user.name, email: user.email, phone: user.phone, age: user.age, lastLoginAt: user.lastLoginAt || null };
+    return { id: user.id, name: user.name, email: user.email, phone: user.phone, age: user.age, createdAt: user.createdAt || null, lastLoginAt: user.lastLoginAt || null };
 }
 
 function publicAdmin(admin) {

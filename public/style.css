@@ -281,6 +281,46 @@
     }
 }
 
+.activity-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    color: #087f83;
+    background: #e6faf4;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.activity-live i,
+.activity-pill i {
+    font-size: 7px;
+}
+
+.activity-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.activity-pill.is-active {
+    color: #087f83;
+    background: #e6faf4;
+}
+
+.activity-pill.is-new {
+    color: #9a5a18;
+    background: #fff3dc;
+}
+
 .auth-benefits {
     display: flex;
     flex-wrap: wrap;

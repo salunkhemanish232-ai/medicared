@@ -497,7 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const { users } = await api('/api/users');
                 if (!users.length) {
-                    adminUsersBody.innerHTML = '<tr><td colspan="5">No registered users yet.</td></tr>';
+                    adminUsersBody.innerHTML = '<tr><td colspan="7">No registered users yet.</td></tr>';
                     return;
                 }
                 adminUsersBody.innerHTML = users.map((user) => `
@@ -506,11 +506,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>${user.email}</td>
                         <td>${user.phone}</td>
                         <td>${user.age}</td>
+                        <td>${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}</td>
                         <td>${user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : 'Not logged in'}</td>
+                        <td><span class="activity-pill ${user.lastLoginAt ? 'is-active' : 'is-new'}"><i class="fa-solid fa-circle"></i> ${user.lastLoginAt ? 'Active' : 'New'}</span></td>
                     </tr>
                 `).join('');
             } catch (error) {
-                adminUsersBody.innerHTML = `<tr><td colspan="5">Unable to load registered users: ${error.message}</td></tr>`;
+                adminUsersBody.innerHTML = `<tr><td colspan="7">Unable to load registered users: ${error.message}</td></tr>`;
             }
         }
 
