@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const errors = {};
         if (String(values.name).trim().length < 2) errors.name = 'Please enter your full name.';
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(values.email).trim())) errors.email = 'Please enter a valid email address.';
-        if (!/^[+()\d\s-]{7,20}$/.test(String(values.phone).trim())) errors.phone = 'Please enter a valid phone number.';
+        if (!/^\d{10}$/.test(String(values.phone).trim())) errors.phone = 'Enter exactly 10 digits, for example 9876543210.';
         const age = Number(values.age);
         if (!Number.isInteger(age) || age < 1 || age > 120) errors.age = 'Age must be between 1 and 120.';
         if (String(values.password).length < 6) errors.password = 'Use at least 6 characters.';
@@ -373,8 +373,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (bookingForm) bookingForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         try {
-            await api('/api/appointments', { method: 'POST', body: JSON.stringify({ doctor: doctorSelect.value, date: document.querySelector('#appointmentDate').value, time: document.querySelector('#appointmentTime').value, reason: document.querySelector('#reason').value, patient: session.email }) });
+            const result = await api('/api/appointments', { method: 'POST', body: JSON.stringify({ doctor: doctorSelect.value, date: document.querySelector('#appointmentDate').value, time: document.querySelector('#appointmentTime').value, reason: document.querySelector('#reason').value, patient: session.email }) });
             bookingForm.reset(); bookingModal.style.setProperty('display', 'none', 'important'); renderAppointments();
+            const bookingSuccess = document.querySelector('#bookingSuccess');
+            const bookingSuccessText = document.querySelector('#bookingSuccessText');
+            if (bookingSuccessText && result.appointment) bookingSuccessText.textContent = `Your ${result.appointment.date} visit request is saved. Our care team will confirm it shortly.`;
+            bookingSuccess?.classList.add('is-visible');
+            bookingSuccess?.setAttribute('aria-hidden', 'false');
         } catch (error) { showError('#bookingForm', error.message); }
     });
 

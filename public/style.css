@@ -757,6 +757,66 @@ table th {
     font-weight: 800;
 }
 
+.booking-success {
+    position: fixed;
+    inset: 0;
+    z-index: 10020;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(8, 47, 73, .48);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .25s ease, visibility .25s ease;
+}
+
+.booking-success.is-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.booking-success-card {
+    display: grid;
+    max-width: 480px;
+    justify-items: center;
+    gap: 14px;
+    padding: 36px 30px;
+    border: 1px solid rgba(255,255,255,.75);
+    border-radius: 24px;
+    background: #fff;
+    box-shadow: 0 28px 80px rgba(8,47,73,.26);
+    text-align: center;
+    animation: registrationPop .35s ease both;
+}
+
+.booking-success-icon {
+    display: grid;
+    width: 72px;
+    height: 72px;
+    place-items: center;
+    border-radius: 24px;
+    color: #fff;
+    background: linear-gradient(135deg, #0d9488, #0284c7);
+    font-size: 28px;
+}
+
+.booking-success-card h2 { color: #082f49; }
+.booking-success-card p { max-width: 360px; color: #52677a; }
+
+.booking-success-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+@media (max-width: 640px) {
+    .booking-success-card { padding: 28px 20px; }
+    .booking-success-actions { width: 100%; flex-direction: column; }
+    .booking-success-actions .btn { width: 100%; }
+}
+
 .registration-complete-actions {
     display: flex;
     flex-wrap: wrap;

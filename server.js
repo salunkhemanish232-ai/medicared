@@ -512,8 +512,8 @@ async function handleApi(request, response, requestUrl) {
         const age = Number(body.age);
         const password = String(body.password || '');
 
-        if (!name || !email || !phone || !Number.isInteger(age) || age < 1 || age > 120 || password.length < 6) {
-            return sendError(response, 400, 'Enter valid registration details. Password must be at least 6 characters.');
+        if (!name || !email || !/^\d{10}$/.test(phone) || !Number.isInteger(age) || age < 1 || age > 120 || password.length < 6) {
+            return sendError(response, 400, 'Enter valid details. Phone number must contain exactly 10 digits and password at least 6 characters.');
         }
 
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
