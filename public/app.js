@@ -91,8 +91,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return { values, errors };
     };
     const isAdminDashboard = document.querySelector('.admin-dashboard');
-    if (document.querySelector('.dashboard-container') && !session) {
+    const isPatientRegistry = document.querySelector('#patients-table-body');
+    if ((document.querySelector('.dashboard-container') || isPatientRegistry) && !session) {
         if (isAdminDashboard) {
+            window.location.href = 'admin-login.html';
+        } else if (isPatientRegistry) {
             window.location.href = 'admin-login.html';
         } else {
             window.location.href = 'login.html';
@@ -100,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    if (isAdminDashboard && session && session.role !== 'admin') {
+    if ((isAdminDashboard || isPatientRegistry) && session && session.role !== 'admin') {
         window.location.href = 'dashboard.html';
         return;
     }
@@ -468,7 +471,14 @@ document.addEventListener('DOMContentLoaded', () => {
             patientModal.style.setProperty('display', 'flex', 'important');
         }));
 
-        patientTable.querySelectorAll('[data-delete-patient]').forEach((button) => button.addEventListener('click', async () => { await api(`/api/patients/${button.dataset.deletePatient}`, { method: 'DELETE' }); renderPatients(); }));
+        patientTable.querySelectorAll('[data-delete-patient]').forEach((button) => button.addEventListener('click', async () => {
+            if (!window.confirm('Delete this patient record? This action cannot be undone.')) return;
+            try {
+                await api(`/api/patients/${button.dataset.deletePatient}`, { method: 'DELETE' });
+                showToast('Patient record deleted successfully.');
+                renderPatients();
+            } catch (error) { showToast(error.message, 'error'); }
+        }));
     }
 
     document.querySelector('#openModalBtn')?.addEventListener('click', () => {
