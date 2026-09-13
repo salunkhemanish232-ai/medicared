@@ -574,6 +574,81 @@ table th {
     }
 }
 
+/* Department directory and public information pages */
+.doctors-directory-section {
+    max-width: 1400px;
+}
+
+.doctors-public-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 22px !important;
+}
+
+.doctors-public-grid .doctor-card {
+    min-height: 100%;
+    border: 1px solid var(--hospital-line) !important;
+    border-radius: 20px !important;
+    box-shadow: var(--hospital-shadow) !important;
+}
+
+.doctors-public-grid .doctor-portrait {
+    height: 340px !important;
+}
+
+.doctors-public-grid .doctor-portrait img {
+    object-fit: cover;
+}
+
+.doctors-public-grid .doctor-card-content {
+    padding: 24px !important;
+}
+
+.doctors-public-grid .doctor-card h3 {
+    font-size: 1.45rem;
+}
+
+.contact-public-grid,
+.contact-public-grid .simple-card-grid {
+    max-width: 1240px;
+}
+
+.contact-public-grid .feature-card,
+.website-section > .simple-card-grid .feature-card {
+    min-height: 180px;
+}
+
+.quick-contact-form {
+    max-width: 820px;
+    margin: 0 auto;
+    border: 1px solid var(--hospital-line) !important;
+    box-shadow: var(--hospital-shadow) !important;
+}
+
+@media (max-width: 1100px) {
+    .doctors-public-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .doctors-public-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .doctors-public-grid .doctor-portrait {
+        height: 300px !important;
+    }
+
+    .doctors-public-grid .doctor-card-content {
+        padding: 20px !important;
+    }
+
+    .contact-public-grid .feature-card,
+    .website-section > .simple-card-grid .feature-card {
+        min-height: 0;
+    }
+}
+
 .activity-live {
     display: inline-flex;
     align-items: center;
