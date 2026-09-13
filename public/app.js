@@ -1,7 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const session = JSON.parse(localStorage.getItem('medicareCurrentUser') || 'null');
+    let session = null;
+    try {
+        session = JSON.parse(localStorage.getItem('medicareCurrentUser') || 'null');
+    } catch (error) {
+        localStorage.removeItem('medicareCurrentUser');
+        localStorage.removeItem('medicareUserRole');
+    }
     const api = async (path, options = {}) => {
-        const response = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...options });
+        let response;
+        try {
+            response = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...options });
+        } catch (error) {
+            throw new Error('Cannot reach the Medicare server. Please check your connection and try again.');
+        }
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.error || 'Request failed.');
         return data;
@@ -47,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!/^[+()\d\s-]{7,20}$/.test(String(values.phone).trim())) errors.phone = 'Please enter a valid phone number.';
         const age = Number(values.age);
         if (!Number.isInteger(age) || age < 1 || age > 120) errors.age = 'Age must be between 1 and 120.';
-        if (String(values.password).length < 6) errors.password = 'Password must be at least 6 characters.';
+        if (String(values.password).length < 6) errors.password = 'Use at least 6 characters.';
         if (values.password !== values.confirmPassword) errors.confirmPassword = 'Passwords do not match.';
         form.querySelectorAll('small[id$="Error"]').forEach((element) => {
             const key = element.id === 'confirmError' ? 'confirmPassword' : element.id.replace('Error', '');
