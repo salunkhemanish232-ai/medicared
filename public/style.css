@@ -281,6 +281,122 @@
     }
 }
 
+/* Professional shared finish */
+:root {
+    --pro-ink: #102f46;
+    --pro-muted: #5a7080;
+    --pro-blue: #087fba;
+    --pro-teal: #0d9488;
+    --pro-line: #dbe7ed;
+    --pro-surface: rgba(255, 255, 255, .94);
+    --pro-shadow: 0 18px 45px rgba(16, 47, 70, .08);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+    color: var(--pro-ink);
+    font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+    line-height: 1.5;
+}
+
+h1, h2, h3, h4, p { overflow-wrap: anywhere; }
+h1, h2, h3, h4 { color: var(--pro-ink); }
+p, .subtitle { color: var(--pro-muted); }
+
+.navbar {
+    position: sticky !important;
+    top: 0;
+    z-index: 1000;
+    background: rgba(255, 255, 255, .94) !important;
+    backdrop-filter: blur(18px);
+}
+
+.navbar-container { min-height: 72px; }
+
+.logo { font-size: 1.18rem; }
+
+.nav-link,
+.menu a {
+    border-radius: 10px;
+    transition: color .2s ease, background .2s ease, transform .2s ease;
+}
+
+.nav-link:hover,
+.menu a:hover { transform: translateY(-1px); }
+
+.btn,
+.btn-auth,
+button {
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.btn:focus-visible,
+.btn-auth:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid rgba(8, 127, 186, .28);
+    outline-offset: 3px;
+}
+
+.feature-card,
+.service-card,
+.care-tool-card,
+.doctor-card,
+.store-card,
+.gallery-card,
+.table-container,
+.form-card-container,
+.auth-card,
+.metric-card,
+.stat-box {
+    border: 1px solid var(--pro-line) !important;
+    background: var(--pro-surface) !important;
+    box-shadow: var(--pro-shadow) !important;
+}
+
+.feature-card:hover,
+.service-card:hover,
+.care-tool-card:hover,
+.doctor-card:hover,
+.store-card:hover {
+    border-color: rgba(13, 148, 136, .35) !important;
+    box-shadow: 0 24px 52px rgba(16, 47, 70, .13) !important;
+}
+
+input,
+select,
+textarea {
+    border-color: var(--pro-line) !important;
+    color: var(--pro-ink);
+}
+
+input::placeholder,
+textarea::placeholder { color: #8a9ba5; }
+
+table { border-collapse: separate; border-spacing: 0; }
+table th { font-weight: 800; letter-spacing: .04em; }
+table td { color: #36526b; }
+
+.section-headline { margin-bottom: 26px; }
+.section-headline h2 { margin-top: 10px; }
+
+.site-footer {
+    background: linear-gradient(135deg, #082f49, #0d5e6b) !important;
+}
+
+@media (max-width: 640px) {
+    .navbar-container { min-height: 62px; }
+    .top-banner { gap: 4px; font-size: .72rem; }
+    .page-main, .website-section { padding-left: 16px; padding-right: 16px; }
+    .section-headline { margin-bottom: 20px; }
+    .section-headline h2 { font-size: 1.7rem; }
+    .feature-card, .service-card, .care-tool-card, .store-card { padding: 20px !important; }
+}
+
 /* Final brand and mobile homepage overrides */
 .navbar .logo,
 .logo {
