@@ -599,7 +599,11 @@ async function handleApi(request, response, requestUrl) {
         };
 
         const validDoctorNames = database.doctors.map((doctor) => `${doctor.name} - ${doctor.department}`);
-        if (!validDoctorNames.includes(appointment.doctor) || !appointment.date || !appointment.time || !appointment.reason || !appointment.patient) {
+        const appointmentDate = new Date(`${appointment.date}T00:00:00`);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const validTime = /^([01]\d|2[0-3]):[0-5]\d$/.test(appointment.time);
+        if (!validDoctorNames.includes(appointment.doctor) || !appointment.date || Number.isNaN(appointmentDate.getTime()) || appointmentDate < today || !validTime || !appointment.reason || appointment.reason.length < 3 || !appointment.patient) {
             return sendError(response, 400, 'Complete all appointment fields.');
         }
 
