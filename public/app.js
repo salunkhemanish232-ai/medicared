@@ -110,6 +110,17 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'index.html';
     });
 
+    document.querySelectorAll('[data-toggle-password]').forEach((toggle) => {
+        toggle.addEventListener('click', () => {
+            const input = document.querySelector(toggle.dataset.togglePassword);
+            if (!input) return;
+            const isVisible = input.type === 'text';
+            input.type = isVisible ? 'password' : 'text';
+            toggle.setAttribute('aria-label', isVisible ? 'Show password' : 'Hide password');
+            toggle.innerHTML = `<i class="fa-solid fa-eye${isVisible ? '' : '-slash'}"></i>`;
+        });
+    });
+
     const registerForm = document.querySelector('#registerForm');
     if (registerForm) registerForm.addEventListener('submit', async (event) => {
         event.preventDefault();

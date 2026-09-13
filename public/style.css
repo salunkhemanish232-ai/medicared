@@ -377,6 +377,42 @@ button:disabled,
     box-shadow:0 0 0 4px rgba(2,132,199,.08);
 }
 
+.password-field{
+    position:relative;
+}
+
+.password-field input{
+    padding-right:52px;
+}
+
+.password-toggle{
+    position:absolute;
+    top:50%;
+    right:10px;
+    width:36px;
+    height:36px;
+    transform:translateY(-50%);
+    border:0;
+    border-radius:10px;
+    background:transparent;
+    color:var(--muted);
+    cursor:pointer;
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible{
+    background:rgba(2,132,199,.1);
+    color:var(--primary);
+    outline:none;
+}
+
+.field-hint{
+    display:block;
+    margin-top:7px;
+    color:var(--muted);
+    font-size:12px;
+}
+
 .form-error{
     display:none;
     margin-top:16px;
@@ -432,6 +468,16 @@ button:disabled,
     flex-wrap:wrap;
     justify-content:center;
     gap:12px;
+}
+
+.auth-footer-note{
+    color:var(--muted);
+    font-size:13px;
+}
+
+.auth-footer-note i{
+    color:var(--success);
+    margin-right:5px;
 }
 
 .btn-outline{
