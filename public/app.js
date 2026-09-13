@@ -492,6 +492,28 @@ document.addEventListener('DOMContentLoaded', () => {
     let editingDoctorId = null;
 
     if (isAdminDashboard) {
+        async function renderAdminUsers() {
+            if (!adminUsersBody) return;
+            try {
+                const { users } = await api('/api/users');
+                if (!users.length) {
+                    adminUsersBody.innerHTML = '<tr><td colspan="5">No registered users yet.</td></tr>';
+                    return;
+                }
+                adminUsersBody.innerHTML = users.map((user) => `
+                    <tr>
+                        <td>${user.name}</td>
+                        <td>${user.email}</td>
+                        <td>${user.phone}</td>
+                        <td>${user.age}</td>
+                        <td>${user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : 'Not logged in'}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                adminUsersBody.innerHTML = `<tr><td colspan="5">Unable to load registered users: ${error.message}</td></tr>`;
+            }
+        }
+
         async function renderAdminDashboard() {
             try {
                 const summary = await api('/api/admin/summary');
@@ -502,6 +524,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.querySelector('#adminTotalUsers').textContent = summary.totalUsers;
                 const liveStatus = document.querySelector('#adminLiveStatus');
                 if (liveStatus) liveStatus.innerHTML = `<i class="fa-solid fa-circle-check"></i> Live data synced at ${new Date().toLocaleTimeString()}`;
+                renderAdminUsers();
 
                 if (adminAppointmentsBody) {
                     const appointments = summary.upcoming || [];
@@ -557,23 +580,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                if (adminUsersBody) {
-                    const { users } = await api('/api/users');
-                    if (!users.length) {
-                        adminUsersBody.innerHTML = '<tr><td colspan="5">No registered users yet.</td></tr>';
-                    } else {
-                        adminUsersBody.innerHTML = users.map((user) => `
-                            <tr>
-                                <td>${user.name}</td>
-                                <td>${user.email}</td>
-                                <td>${user.phone}</td>
-                                <td>${user.age}</td>
-                                <td>${user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : 'Not logged in'}</td>
-                            </tr>
-                        `).join('');
-                    }
-                }
-
                 if (adminDoctorsBody) {
                     const { doctors } = await api('/api/doctors');
                     if (!doctors.length) {
@@ -621,7 +627,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (adminAppointmentsBody) adminAppointmentsBody.innerHTML = `<tr><td colspan="5">${error.message}</td></tr>`;
                 if (adminPatientsBody) adminPatientsBody.innerHTML = `<tr><td colspan="4">${error.message}</td></tr>`;
                 if (adminDoctorsBody) adminDoctorsBody.innerHTML = `<tr><td colspan="7">${error.message}</td></tr>`;
-                if (adminUsersBody) adminUsersBody.innerHTML = `<tr><td colspan="5">${error.message}</td></tr>`;
             }
         }
 
