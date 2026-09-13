@@ -355,6 +355,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const bookingModal = document.querySelector('#bookingModal');
     const bookingForm = document.querySelector('#bookingForm');
     const doctorSelect = document.querySelector('#doctorSelect');
+    const appointmentDate = document.querySelector('#appointmentDate');
+    if (appointmentDate) appointmentDate.min = new Date().toISOString().split('T')[0];
     if (doctorSelect) api('/api/doctors').then(({ doctors }) => doctors.forEach((doctor) => doctorSelect.add(new Option(`${doctor.name} - ${doctor.department}`, `${doctor.name} - ${doctor.department}`)))).catch((error) => showError('#bookingForm', error.message));
     document.querySelector('#openBookingBtn')?.addEventListener('click', () => {
         if (!session) return window.location.href = 'login.html'; bookingModal.style.setProperty('display', 'flex', 'important');
@@ -534,7 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (adminAppointmentsBody) {
                     const appointments = summary.upcoming || [];
                     if (!appointments.length) {
-                        adminAppointmentsBody.innerHTML = '<tr><td colspan="5">No upcoming appointments.</td></tr>';
+                        adminAppointmentsBody.innerHTML = '<tr><td colspan="6">No upcoming appointments.</td></tr>';
                     } else {
                         adminAppointmentsBody.innerHTML = appointments.map((item) => `
                             <tr>
@@ -542,9 +544,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <td>${item.patient || 'Unknown patient'}</td>
                                 <td>${item.date}</td>
                                 <td>${item.time}</td>
+                                <td>${item.createdAt ? new Date(item.createdAt).toLocaleString() : 'Unknown'}</td>
                                 <td>
                                     <select class="admin-status-select" data-appointment-id="${item.id}" aria-label="Update appointment status">
-                                        <option value="Pending" ${item.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                        <option value="Pending" ${item.status === 'Pending' ? 'selected' : ''}>Waiting for confirmation</option>
                                         <option value="Confirmed" ${item.status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
                                         <option value="Completed" ${item.status === 'Completed' ? 'selected' : ''}>Completed</option>
                                         <option value="Cancelled" ${item.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
@@ -629,7 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             } catch (error) {
-                if (adminAppointmentsBody) adminAppointmentsBody.innerHTML = `<tr><td colspan="5">${error.message}</td></tr>`;
+                if (adminAppointmentsBody) adminAppointmentsBody.innerHTML = `<tr><td colspan="6">${error.message}</td></tr>`;
                 if (adminPatientsBody) adminPatientsBody.innerHTML = `<tr><td colspan="4">${error.message}</td></tr>`;
                 if (adminDoctorsBody) adminDoctorsBody.innerHTML = `<tr><td colspan="7">${error.message}</td></tr>`;
             }
