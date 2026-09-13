@@ -91,6 +91,9 @@ const STORE_PRODUCTS = [
 const VALID_STATUS = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
 let mysqlPool = null;
 const adminSessions = new Map();
+const loginAttempts = new Map();
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const MAX_LOGIN_ATTEMPTS = 5;
 
 function getDefaultDatabase() {
     return {
@@ -368,10 +371,14 @@ function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
 }
 
 function passwordMatches(password, storedPassword) {
-    const [salt, storedHash] = storedPassword.split(':');
-    if (!salt || !storedHash) return false;
-    const hash = crypto.scryptSync(password, salt, 64).toString('hex');
-    return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(storedHash, 'hex'));
+    try {
+        const [salt, storedHash] = String(storedPassword || '').split(':');
+        if (!salt || !/^[a-f0-9]{128}$/i.test(storedHash)) return false;
+        const hash = crypto.scryptSync(String(password || ''), salt, 64).toString('hex');
+        return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(storedHash, 'hex'));
+    } catch (error) {
+        return false;
+    }
 }
 
 function buildDashboardSummary(database) {
@@ -396,6 +403,38 @@ function buildDashboardSummary(database) {
 
 function sanitizeEmail(email) {
     return String(email || '').trim().toLowerCase();
+}
+
+function getClientAddress(request) {
+    return String(request.headers['x-forwarded-for'] || request.socket.remoteAddress || 'unknown').split(',')[0].trim();
+}
+
+function loginRateKey(request, email, type) {
+    return `${type}:${getClientAddress(request)}:${email}`;
+}
+
+function isLoginRateLimited(key) {
+    const attempt = loginAttempts.get(key);
+    if (!attempt) return false;
+    if (Date.now() - attempt.startedAt >= LOGIN_WINDOW_MS) {
+        loginAttempts.delete(key);
+        return false;
+    }
+    return attempt.count >= MAX_LOGIN_ATTEMPTS;
+}
+
+function recordLoginFailure(key) {
+    const now = Date.now();
+    const attempt = loginAttempts.get(key);
+    if (!attempt || now - attempt.startedAt >= LOGIN_WINDOW_MS) {
+        loginAttempts.set(key, { startedAt: now, count: 1 });
+        return;
+    }
+    attempt.count += 1;
+}
+
+function clearLoginFailures(key) {
+    loginAttempts.delete(key);
 }
 
 function isAdminRequest(request) {
@@ -504,12 +543,18 @@ async function handleApi(request, response, requestUrl) {
     if (method === 'POST' && route === '/api/login') {
         const email = sanitizeEmail(body.email);
         const password = String(body.password || '');
+        const rateKey = loginRateKey(request, email, 'patient');
+        if (isLoginRateLimited(rateKey)) {
+            return sendError(response, 429, 'Too many login attempts. Please try again in 15 minutes.');
+        }
         const user = database.users.find((item) => item.email === email);
 
         if (!user || !passwordMatches(password, user.password)) {
+            recordLoginFailure(rateKey);
             return sendError(response, 401, 'Email or password is incorrect.');
         }
 
+        clearLoginFailures(rateKey);
         user.lastLoginAt = new Date().toISOString();
         await writeDatabase(database);
 
@@ -519,12 +564,18 @@ async function handleApi(request, response, requestUrl) {
     if (method === 'POST' && route === '/api/admin/login') {
         const email = sanitizeEmail(body.email);
         const password = String(body.password || '');
+        const rateKey = loginRateKey(request, email, 'admin');
+        if (isLoginRateLimited(rateKey)) {
+            return sendError(response, 429, 'Too many login attempts. Please try again in 15 minutes.');
+        }
         const admin = database.admins.find((item) => item.email === email);
 
         if (!admin || !passwordMatches(password, admin.password)) {
+            recordLoginFailure(rateKey);
             return sendError(response, 401, 'Admin email or password is incorrect.');
         }
 
+        clearLoginFailures(rateKey);
         const token = crypto.randomBytes(32).toString('hex');
         adminSessions.set(token, { adminId: admin.id, createdAt: Date.now() });
         return sendJson(response, 200, { user: publicAdmin(admin), token });
@@ -731,12 +782,15 @@ function serveStatic(request, response, requestUrl) {
 ensureDatabase();
 const server = http.createServer(async (request, response) => {
     const requestUrl = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
+    response.setHeader('X-Content-Type-Options', 'nosniff');
+    response.setHeader('X-Frame-Options', 'DENY');
+    response.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    response.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
     if (request.method === 'OPTIONS') {
         response.writeHead(204, {
-            'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type'
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization'
         });
         return response.end();
     }
