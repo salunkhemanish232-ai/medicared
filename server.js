@@ -8,7 +8,7 @@ const mysql = require('mysql2/promise');
 const PORT = Number(process.env.PORT) || 8080;
 const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, 'public');
-const DATABASE_DIR = path.join(ROOT, 'database');
+const DATABASE_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(ROOT, 'database');
 const DATABASE_FILE = path.join(DATABASE_DIR, 'medicare-db.json');
 const DB_CONFIG = {
     host: process.env.DB_HOST || '127.0.0.1',
@@ -90,6 +90,7 @@ const STORE_PRODUCTS = [
 
 const VALID_STATUS = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
 let mysqlPool = null;
+let storageMode = 'json';
 const adminSessions = new Map();
 const loginAttempts = new Map();
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
@@ -157,9 +158,11 @@ async function getMysqlPool() {
         const connection = await mysqlPool.getConnection();
         await connection.ping();
         connection.release();
+        storageMode = 'mysql';
         return mysqlPool;
     } catch (error) {
         mysqlPool = null;
+        storageMode = 'json';
         console.warn('MySQL not available, using JSON fallback:', error.message);
         return null;
     }
@@ -469,7 +472,7 @@ async function handleApi(request, response, requestUrl) {
     const database = await readDatabase();
 
     if (method === 'GET' && route === '/api/health') {
-        return sendJson(response, 200, { status: 'ok', service: 'Medicare API', timestamp: new Date().toISOString() });
+        return sendJson(response, 200, { status: 'ok', service: 'Medicare API', storage: storageMode, persistentDataDirectory: DATABASE_DIR, timestamp: new Date().toISOString() });
     }
 
     if (method === 'GET' && route === '/api/doctors') {

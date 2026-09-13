@@ -44,14 +44,14 @@ $env:DB_NAME="medicare_db"
 npm start
 ```
 
-The server creates the database and tables automatically when the MySQL user has permission to create databases. If MySQL is unavailable, local development falls back to `database/medicare-db.json`.
+The server creates the database and tables automatically when the MySQL user has permission to create databases. If MySQL is unavailable, local development falls back to `database/medicare-db.json`. On Render, the included configuration mounts `/var/data` and sets `DATA_DIR=/var/data`, so fallback data survives restarts when the selected Render plan supports persistent disks.
 
 ## Publish online
 
 Use a Node.js host such as Render, Railway, or a VPS and a hosted MySQL provider such as Railway MySQL, Aiven, or PlanetScale.
 
 1. Upload this project to a Git repository.
-2. Create a Node web service using `npm install` and `npm start`. Render can use the included `render.yaml`.
+2. Create a Node web service using `npm install` and `npm start`. Render can use the included `render.yaml`, which configures persistent fallback storage.
 3. Add the MySQL environment variables in the hosting dashboard.
 4. Set `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME`.
 5. Set `PORT` only if the host requires it; the server already reads the host-provided port.
