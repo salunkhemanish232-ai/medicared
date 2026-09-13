@@ -30,6 +30,37 @@
         </header>
 
         <section class="website-section">
+            <div class="table-container">
+                <div class="table-header-row">
+                    <div>
+                        <span class="eyebrow">Account activity</span>
+                        <h2>Registered users</h2>
+                    </div>
+                    <div class="activity-actions">
+                        <span class="activity-live"><i class="fa-solid fa-circle"></i> Live</span>
+                        <button type="button" class="btn btn-small" id="refreshUsersBtn"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Age</th>
+                            <th>Registered</th>
+                            <th>Last login</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminUsersBody">
+                        <tr><td colspan="7">Loading registered users...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="website-section">
             <div class="stats-container">
                 <div class="stat-box">
                     <h2 id="adminTotalAppointments">0</h2>
@@ -51,34 +82,6 @@
                     <h2 id="adminTotalUsers">0</h2>
                     <p>Registered Users</p>
                 </div>
-            </div>
-        </section>
-
-        <section class="website-section">
-            <div class="table-container">
-                <div class="table-header-row">
-                    <div>
-                        <span class="eyebrow">Account activity</span>
-                        <h2>Registered users</h2>
-                    </div>
-                    <span class="activity-live"><i class="fa-solid fa-circle"></i> Live</span>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Age</th>
-                            <th>Registered</th>
-                            <th>Last login</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="adminUsersBody">
-                        <tr><td colspan="7">Loading registered users...</td></tr>
-                    </tbody>
-                </table>
             </div>
         </section>
 

@@ -295,6 +295,16 @@
     letter-spacing: .06em;
 }
 
+.activity-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.activity-actions .btn {
+    min-height: 36px;
+}
+
 .activity-live i,
 .activity-pill i {
     font-size: 7px;

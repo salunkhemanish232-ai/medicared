@@ -483,6 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminAppointmentsBody = document.querySelector('#adminAppointmentsBody');
     const adminPatientsBody = document.querySelector('#adminPatientsBody');
     const adminUsersBody = document.querySelector('#adminUsersBody');
+    const refreshUsersBtn = document.querySelector('#refreshUsersBtn');
     const adminDoctorsBody = document.querySelector('#adminDoctorsBody');
     const doctorModal = document.querySelector('#doctorModal');
     const doctorForm = document.querySelector('#doctorForm');
@@ -497,7 +498,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const { users } = await api('/api/users');
                 if (!users.length) {
-                    adminUsersBody.innerHTML = '<tr><td colspan="7">No registered users yet.</td></tr>';
+                    adminUsersBody.innerHTML = '<tr><td colspan="7">No registrations in the live database yet. Register a patient on the live website, then refresh.</td></tr>';
                     return;
                 }
                 adminUsersBody.innerHTML = users.map((user) => `
@@ -515,6 +516,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 adminUsersBody.innerHTML = `<tr><td colspan="7">Unable to load registered users: ${error.message}</td></tr>`;
             }
         }
+
+        refreshUsersBtn?.addEventListener('click', renderAdminUsers);
 
         async function renderAdminDashboard() {
             try {
