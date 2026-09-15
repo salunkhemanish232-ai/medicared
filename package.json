@@ -5,7 +5,11 @@
   "description": "Medicare hospital appointment and patient portal",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "test": "node tests/auth-smoke.test.js && node tests/doctor-smoke.test.js && node tests/security-smoke.test.js"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "dependencies": {
     "mysql2": "^3.24.4"

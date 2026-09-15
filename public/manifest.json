@@ -1,0 +1,12 @@
+{
+  "name": "Medicare Healthcare",
+  "short_name": "Medicare",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5fafc",
+  "theme_color": "#087f8c",
+  "description": "Medicare hospital services, appointments, and secure patient access.",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

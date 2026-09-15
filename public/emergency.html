@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Care - Medicare</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<nav class="navbar" role="navigation" aria-label="Main Navigation">
+    <div class="navbar-container">
+        <a href="index.html" class="logo"><i class="fa-solid fa-hospital"></i> Medi<span>care</span></a>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation menu"><i class="fa-solid fa-bars"></i></button>
+        <ul class="menu" id="nav-menu">
+            <li><a href="index.html" class="nav-link">Home</a></li>
+            <li><a href="about.html" class="nav-link">About</a></li>
+            <li><a href="services.html" class="nav-link">Services</a></li>
+            <li><a href="doctors.html" class="nav-link">Doctors</a></li>
+            <li><a href="appointments.html" class="nav-link">Appointments</a></li>
+            <li><a href="emergency.html" class="nav-link active">Emergency</a></li>
+            <li><a href="contact.html" class="nav-link">Contact</a></li>
+            <li><a href="login.html" class="nav-link">Login</a></li>
+        </ul>
+    </div>
+</nav>
+
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+    <span class="breadcrumb-separator">/</span>
+    <span aria-current="page">Emergency care</span>
+</nav>
+
+<main class="page-shell" style="padding-top:40px; padding-bottom:72px;">
+    <section class="website-section">
+        <div class="section-headline">
+            <div>
+                <span class="tag tag--primary"><i class="fa-solid fa-truck-medical"></i> Emergency care</span>
+                <h2>For urgent medical concerns, seek immediate local emergency care.</h2>
+                <p class="subtitle">Medicare provides non-emergency support and direction. We do not provide emergency medical services or emergency room treatment.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="website-section">
+        <div class="simple-card-grid">
+            <article class="feature-card">
+                <i class="fa-solid fa-location-dot flow-icon"></i>
+                <h3>Location & access</h3>
+                <p class="subtitle">Patients should use a licensed local emergency department or contact the most appropriate local emergency service provider for immediate care.</p>
+            </article>
+            <article class="feature-card">
+                <i class="fa-solid fa-phone flow-icon"></i>
+                <h3>Contact support</h3>
+                <p class="subtitle">For non-urgent questions, contact the hospital support team through our general contact page.</p>
+            </article>
+            <article class="feature-card">
+                <i class="fa-solid fa-circle-info flow-icon"></i>
+                <h3>What we can do</h3>
+                <p class="subtitle">We can help guide patients toward the right department, available appointment options, and safe next steps.</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="website-section">
+        <div class="care-tools-grid">
+            <article class="care-tool-card care-tool-card--chat">
+                <div class="care-tool-icon"><i class="fa-solid fa-headset"></i></div>
+                <div>
+                    <span class="eyebrow">General guidance</span>
+                    <h3>Hospital support</h3>
+                    <p>Ask about appointments, department routing, follow-ups, and patient access.</p>
+                </div>
+                <a href="contact.html" class="btn btn-small btn-outline"><i class="fa-solid fa-arrow-right"></i> Contact support</a>
+            </article>
+            <article class="care-tool-card care-tool-card--video">
+                <div class="care-tool-icon"><i class="fa-solid fa-briefcase-medical"></i></div>
+                <div>
+                    <span class="eyebrow">Care planning</span>
+                    <h3>Safe next steps</h3>
+                    <p>We help patients choose the appropriate service level without providing emergency treatment.</p>
+                </div>
+                <a href="appointments.html" class="btn btn-small"><i class="fa-solid fa-calendar-check"></i> Book a visit</a>
+            </article>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer" role="contentinfo">
+    <p>&copy; 2026 Medicare. All rights reserved.</p>
+    <p>Guidance and care coordination for everyday healthcare needs.</p>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

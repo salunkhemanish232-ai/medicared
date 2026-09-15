@@ -7,6 +7,18 @@
 - `server.js` serves the website and API.
 - MySQL is the production database when `DB_HOST`, `DB_USER`, and `DB_PASSWORD` are configured.
 
+## Technology stack
+
+This project intentionally keeps its working Node.js HTTP server and static HTML/CSS/JavaScript frontend. Replacing it wholesale with Next.js would risk the existing authentication, patient privacy, doctor authorization, and Render deployment flows. The current stack uses:
+
+- Node.js backend with REST-style API routes and secure HTTP-only sessions.
+- Semantic HTML, shared CSS, and browser JavaScript for the frontend and PWA shell.
+- MySQL through `mysql2` in production, with persistent JSON fallback for local development.
+- Render-compatible deployment through `render.yaml`.
+- Built-in smoke tests for authentication, doctor authorization, and security boundaries.
+
+See [TECHNOLOGY.md](TECHNOLOGY.md) for the target modernization path and the reasons it remains incremental.
+
 ## Run locally
 
 ```powershell
@@ -58,5 +70,7 @@ Use a Node.js host such as Render, Railway, or a VPS and a hosted MySQL provider
 6. Open the public HTTPS URL and test registration, login, appointments, and admin actions.
 
 Do not publish the local JSON database as the production source of truth. Use MySQL for persistent online data and keep credentials in hosting environment variables, never in frontend files.
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the production checklist, PWA caching boundary, security notes, database setup, and test commands.
 
 The repository ignores `database/medicare-db.json` and local database files. This prevents test patient records and local credentials from being uploaded to GitHub.

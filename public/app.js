@@ -1,3 +1,13 @@
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+}
+if (!document.querySelector('link[rel="manifest"]')) {
+    const manifestLink = document.createElement('link');
+    manifestLink.rel = 'manifest';
+    manifestLink.href = '/manifest.json';
+    document.head.appendChild(manifestLink);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const siteLoader = document.querySelector('#siteLoader');
     if (siteLoader) {
@@ -20,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
             const adminToken = localStorage.getItem('medicareAdminToken');
             if (adminToken) headers.Authorization = `Bearer ${adminToken}`;
-            response = await fetch(path, { ...options, headers });
+            response = await fetch(path, { ...options, credentials: 'same-origin', headers });
         } catch (error) {
             throw new Error('Cannot reach the Medicare server. Please check your connection and try again.');
         }
@@ -49,6 +59,49 @@ document.addEventListener('DOMContentLoaded', () => {
         const element = document.querySelector(selector);
         if (element) { element.textContent = ''; element.style.display = 'none'; }
     };
+    const clearSessionCookie = (name) => {
+        document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
+    };
+    const applyTheme = (theme) => {
+        const resolvedTheme = theme === 'dark' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', resolvedTheme);
+        document.body.classList.toggle('theme-dark', resolvedTheme === 'dark');
+        const themeToggle = document.querySelector('[data-theme-toggle]');
+        if (themeToggle) {
+            themeToggle.setAttribute('aria-pressed', String(resolvedTheme === 'dark'));
+            themeToggle.innerHTML = resolvedTheme === 'dark'
+                ? '<i class="fa-solid fa-sun"></i><span>Light</span>'
+                : '<i class="fa-solid fa-moon"></i><span>Dark</span>';
+        }
+        localStorage.setItem('medicareTheme', resolvedTheme);
+    };
+    const ensureThemeToggle = () => {
+        const navMenu = document.querySelector('#nav-menu');
+        if (!navMenu || navMenu.querySelector('[data-theme-toggle]')) return;
+        const item = document.createElement('li');
+        item.innerHTML = '<button type="button" class="theme-toggle" data-theme-toggle aria-label="Toggle color theme"><i class="fa-solid fa-moon"></i><span>Dark</span></button>';
+        navMenu.appendChild(item);
+        item.querySelector('[data-theme-toggle]').addEventListener('click', () => {
+            const nextTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            applyTheme(nextTheme);
+        });
+    };
+    const ensureBreadcrumbs = () => {
+        if (document.querySelector('.breadcrumbs')) return;
+        const pageTitle = document.title.replace('Medicare - ', '').trim();
+        const breadcrumbs = document.createElement('nav');
+        breadcrumbs.className = 'breadcrumbs';
+        breadcrumbs.setAttribute('aria-label', 'Breadcrumb');
+        const homeCrumb = '<a href="index.html"><i class="fa-solid fa-house"></i> Home</a>';
+        const currentCrumb = `<span aria-current="page">${escapeHtml(pageTitle || 'Care Portal')}</span>`;
+        breadcrumbs.innerHTML = `${homeCrumb} <span class="breadcrumb-separator">/</span> ${currentCrumb}`;
+        const siteMain = document.querySelector('main') || document.querySelector('.main-content') || document.body.firstElementChild;
+        if (siteMain && siteMain.parentElement) {
+            siteMain.parentElement.insertBefore(breadcrumbs, siteMain);
+        } else {
+            document.body.insertBefore(breadcrumbs, document.body.firstChild);
+        }
+    };
     const showToast = (message, type = 'success') => {
         const toast = document.createElement('div');
         toast.className = `site-toast site-toast--${type}`;
@@ -58,6 +111,40 @@ document.addEventListener('DOMContentLoaded', () => {
         window.setTimeout(() => toast.classList.add('is-visible'), 20);
         window.setTimeout(() => { toast.classList.remove('is-visible'); window.setTimeout(() => toast.remove(), 250); }, 3200);
     };
+    const showConfirmDialog = ({ title, message, confirmText = 'Continue', confirmClass = 'btn-danger' }) => new Promise((resolve) => {
+        const existing = document.querySelector('.confirm-dialog');
+        if (existing) existing.remove();
+        const dialog = document.createElement('div');
+        dialog.className = 'confirm-dialog';
+        dialog.innerHTML = `
+            <div class="confirm-dialog-backdrop" aria-hidden="true"></div>
+            <div class="confirm-dialog-card" role="dialog" aria-modal="true" aria-labelledby="confirmDialogTitle">
+                <div class="confirm-dialog-header">
+                    <h2 id="confirmDialogTitle">${escapeHtml(title)}</h2>
+                    <button type="button" class="confirm-dialog-close" aria-label="Close confirmation dialog">×</button>
+                </div>
+                <p>${escapeHtml(message)}</p>
+                <div class="confirm-dialog-actions">
+                    <button type="button" class="btn btn-outline confirm-dialog-cancel">Cancel</button>
+                    <button type="button" class="btn ${confirmClass} confirm-dialog-confirm">${escapeHtml(confirmText)}</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(dialog);
+        const closeDialog = () => { dialog.remove(); resolve(false); };
+        dialog.querySelector('.confirm-dialog-close').addEventListener('click', closeDialog);
+        dialog.querySelector('.confirm-dialog-cancel').addEventListener('click', closeDialog);
+        dialog.querySelector('.confirm-dialog-confirm').addEventListener('click', () => {
+            dialog.remove();
+            resolve(true);
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && document.body.contains(dialog)) {
+                dialog.remove();
+                resolve(false);
+            }
+        }, { once: true });
+    });
     const setLoading = (button, loading, label) => {
         if (!button) return;
         button.disabled = loading;
@@ -108,9 +195,16 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    ensureThemeToggle();
+    ensureBreadcrumbs();
     const menuToggle = document.querySelector('#menu-toggle');
     const navMenu = document.querySelector('#nav-menu');
     if (menuToggle && navMenu) menuToggle.addEventListener('click', () => navMenu.classList.toggle('is-open'));
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && navMenu) navMenu.classList.remove('is-open');
+    });
+    const savedTheme = localStorage.getItem('medicareTheme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(savedTheme);
 
     document.querySelectorAll('.nav-link').forEach((link) => {
         const href = link.getAttribute('href');
@@ -125,6 +219,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     document.querySelector('#nav-logout-link')?.addEventListener('click', (event) => {
         event.preventDefault();
+        clearSessionCookie('medicare_session');
+        clearSessionCookie('medicare_admin_session');
         localStorage.removeItem('medicareCurrentUser');
         localStorage.removeItem('medicareUserRole');
         localStorage.removeItem('medicareAdminToken');
@@ -155,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = document.querySelector('#registerBtn');
         setLoading(button, true);
         try {
-            const result = await api('/api/register', { method: 'POST', body: JSON.stringify({ name: form.get('name'), email: form.get('email'), phone: form.get('phone'), age: form.get('age'), password: form.get('password') }) });
+            const result = await api('/api/auth/register', { method: 'POST', body: JSON.stringify({ name: form.get('name'), email: form.get('email'), phone: form.get('phone'), age: form.get('age'), password: form.get('password'), role: 'patient' }) });
             localStorage.setItem('medicareCurrentUser', JSON.stringify(result.user));
             showSuccess('#registerSuccess', 'Registration successful. Your account is secure and ready.');
             const completion = document.querySelector('#registrationComplete');
@@ -220,6 +316,104 @@ document.addEventListener('DOMContentLoaded', () => {
             setLoading(button, false);
         }
     });
+
+    const forgotPasswordForm = document.querySelector('#forgotPasswordForm');
+    if (forgotPasswordForm) forgotPasswordForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const email = document.querySelector('#forgotEmail').value.trim();
+        const success = document.querySelector('#forgotPasswordSuccess');
+        const error = document.querySelector('#forgotPasswordError');
+        if (!email) return showError('#forgotPasswordError', 'Enter your email address.');
+        try {
+            const result = await api('/api/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
+            success.textContent = result.message || 'If your account exists, a reset link has been generated.';
+            success.style.display = 'block';
+            error.style.display = 'none';
+        } catch (err) {
+            showError('#forgotPasswordError', err.message || 'Unable to process the request.');
+        }
+    });
+
+    const resetPasswordForm = document.querySelector('#resetPasswordForm');
+    if (resetPasswordForm) resetPasswordForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+        const password = document.querySelector('#resetPassword').value;
+        const confirmPassword = document.querySelector('#resetConfirmPassword').value;
+        const success = document.querySelector('#resetPasswordSuccess');
+        const error = document.querySelector('#resetPasswordError');
+        if (!token) return showError('#resetPasswordError', 'Reset token is missing.');
+        if (!password || password.length < 8 || password !== confirmPassword) return showError('#resetPasswordError', 'Use a strong password and confirm it correctly.');
+        try {
+            const result = await api('/api/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, password }) });
+            success.textContent = result.message || 'Password reset successful.';
+            success.style.display = 'block';
+            error.style.display = 'none';
+            setTimeout(() => { window.location.href = 'login.html'; }, 1200);
+        } catch (err) {
+            showError('#resetPasswordError', err.message || 'Password reset failed.');
+        }
+    });
+
+    const verifyEmailContainer = document.querySelector('#verifyEmailMessage');
+    if (verifyEmailContainer) {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+        if (!token) {
+            document.querySelector('#verifyEmailError').textContent = 'Verification token is missing.';
+        } else {
+            api('/api/auth/verify-email', { method: 'POST', body: JSON.stringify({ token }) })
+                .then((result) => {
+                    verifyEmailContainer.textContent = result.message || 'Email verified successfully.';
+                    verifyEmailContainer.style.display = 'block';
+                })
+                .catch((err) => {
+                    document.querySelector('#verifyEmailError').textContent = err.message || 'Verification failed.';
+                });
+        }
+    }
+
+    const profileForm = document.querySelector('#profileForm');
+    if (profileForm) {
+        const currentUser = JSON.parse(localStorage.getItem('medicareCurrentUser') || 'null');
+        if (!currentUser) {
+            window.location.href = 'login.html';
+            return;
+        }
+        api('/api/auth/profile')
+            .then(({ user }) => {
+                document.querySelector('#profileName').value = user.name || '';
+                document.querySelector('#profileEmail').value = user.email || '';
+                document.querySelector('#profilePhone').value = user.phone || '';
+                document.querySelector('#profileAge').value = user.age || '';
+                document.querySelector('#profileRole').value = user.role || 'patient';
+            })
+            .catch(() => {
+                window.location.href = 'login.html';
+            });
+
+        profileForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const payload = {
+                name: document.querySelector('#profileName').value,
+                phone: document.querySelector('#profilePhone').value,
+                age: document.querySelector('#profileAge').value,
+                role: document.querySelector('#profileRole').value,
+                currentPassword: document.querySelector('#profileCurrentPassword').value,
+                newPassword: document.querySelector('#profileNewPassword').value
+            };
+            try {
+                const result = await api('/api/auth/profile', { method: 'PUT', body: JSON.stringify(payload) });
+                localStorage.setItem('medicareCurrentUser', JSON.stringify(result.user));
+                document.querySelector('#profileSuccess').textContent = result.message || 'Profile updated successfully.';
+                document.querySelector('#profileSuccess').style.display = 'block';
+                document.querySelector('#profileError').style.display = 'none';
+            } catch (err) {
+                showError('#profileError', err.message || 'Profile update failed.');
+            }
+        });
+    }
 
     const contactForm = document.querySelector('#contact-form');
     if (contactForm) contactForm.addEventListener('submit', async (event) => {

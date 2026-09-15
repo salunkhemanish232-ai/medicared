@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostics - Medicare</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<nav class="navbar" role="navigation" aria-label="Main Navigation">
+    <div class="navbar-container">
+        <a href="index.html" class="logo"><i class="fa-solid fa-hospital"></i> Medi<span>care</span></a>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation menu"><i class="fa-solid fa-bars"></i></button>
+        <ul class="menu" id="nav-menu">
+            <li><a href="index.html" class="nav-link">Home</a></li>
+            <li><a href="about.html" class="nav-link">About</a></li>
+            <li><a href="services.html" class="nav-link">Services</a></li>
+            <li><a href="doctors.html" class="nav-link">Doctors</a></li>
+            <li><a href="diagnostics.html" class="nav-link active">Diagnostics</a></li>
+            <li><a href="appointments.html" class="nav-link">Appointments</a></li>
+            <li><a href="contact.html" class="nav-link">Contact</a></li>
+        </ul>
+    </div>
+</nav>
+
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+    <span class="breadcrumb-separator">/</span>
+    <span aria-current="page">Diagnostics</span>
+</nav>
+
+<main class="page-shell" style="padding-top:40px; padding-bottom:72px;">
+    <section class="website-section">
+        <div class="section-headline">
+            <div>
+                <span class="tag tag--primary"><i class="fa-solid fa-vial-circle-check"></i> Diagnostics</span>
+                <h2>Fast, structured tests for confident care decisions.</h2>
+                <p class="subtitle">Book lab and imaging studies, review preparation guidance, and keep test reports organized.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="website-section">
+        <div class="simple-card-grid">
+            <article class="feature-card">
+                <i class="fa-solid fa-flask-vial flow-icon"></i>
+                <h3>Lab tests</h3>
+                <p class="subtitle">Routine blood work, screening panels, and follow-up monitoring, arranged by the care team.</p>
+            </article>
+            <article class="feature-card">
+                <i class="fa-solid fa-x-ray flow-icon"></i>
+                <h3>Imaging</h3>
+                <p class="subtitle">Support for clinically recommended imaging appointment coordination and reporting access.</p>
+            </article>
+            <article class="feature-card">
+                <i class="fa-solid fa-file-medical flow-icon"></i>
+                <h3>Report access</h3>
+                <p class="subtitle">Patients can review preparation steps and request follow-up review through authorized channels.</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="website-section">
+        <div class="care-tools-grid">
+            <article class="care-tool-card care-tool-card--records">
+                <div class="care-tool-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                <div>
+                    <span class="eyebrow">Preparation</span>
+                    <h3>Before your test</h3>
+                    <p>Follow the clinician’s instructions, arrive on time, and bring any previous reports you may need.</p>
+                </div>
+                <a href="appointments.html" class="btn btn-small btn-outline"><i class="fa-solid fa-calendar-check"></i> Book test</a>
+            </article>
+            <article class="care-tool-card care-tool-card--video">
+                <div class="care-tool-icon"><i class="fa-solid fa-shield-heart"></i></div>
+                <div>
+                    <span class="eyebrow">Authorized access</span>
+                    <h3>Report review</h3>
+                    <p>Reports are reviewed through approved clinical workflows and patient-support channels.</p>
+                </div>
+                <a href="contact.html" class="btn btn-small"><i class="fa-solid fa-arrow-right"></i> Ask a question</a>
+            </article>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer" role="contentinfo">
+    <p>&copy; 2026 Medicare. All rights reserved.</p>
+    <p>Clear diagnostics support with trusted follow-up guidance.</p>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

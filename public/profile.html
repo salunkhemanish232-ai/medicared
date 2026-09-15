@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicare - Profile</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="auth-body">
+<main class="auth-main">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <i class="fa-solid fa-user-gear auth-icon"></i>
+                <span class="tag tag--primary">My profile</span>
+                <h1>Manage account details.</h1>
+                <p class="subtitle">Update your contact information, account role, and password security.</p>
+            </div>
+            <form class="auth-form" id="profileForm" novalidate>
+                <div class="form-group">
+                    <label for="profileName"><i class="fa-solid fa-user"></i> Full Name</label>
+                    <input type="text" id="profileName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="profileEmail"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                    <input type="email" id="profileEmail" name="email" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="profilePhone"><i class="fa-solid fa-phone"></i> Phone Number</label>
+                    <input type="tel" id="profilePhone" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="profileAge"><i class="fa-solid fa-cake-candles"></i> Age</label>
+                    <input type="number" id="profileAge" name="age" min="1" max="120" required>
+                </div>
+                <div class="form-group">
+                    <label for="profileRole"><i class="fa-solid fa-user-shield"></i> Role</label>
+                    <select id="profileRole" name="role">
+                        <option value="patient">Patient</option>
+                        <option value="doctor">Doctor</option>
+                        <option value="staff">Staff</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="profileCurrentPassword"><i class="fa-solid fa-lock"></i> Current Password</label>
+                    <input type="password" id="profileCurrentPassword" name="currentPassword" placeholder="Required to change password" autocomplete="current-password">
+                </div>
+                <div class="form-group">
+                    <label for="profileNewPassword"><i class="fa-solid fa-key"></i> New Password</label>
+                    <input type="password" id="profileNewPassword" name="newPassword" placeholder="Leave blank to keep current password" autocomplete="new-password">
+                </div>
+                <div id="profileError" class="form-error" role="alert"></div>
+                <div id="profileSuccess" class="success-banner" aria-live="polite"></div>
+                <button type="submit" class="btn-auth"><i class="fa-solid fa-floppy-disk"></i> Save changes</button>
+            </form>
+            <div class="auth-footer">
+                <a href="dashboard.html" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Back to dashboard</a>
+                <a href="index.html" class="btn btn-outline"><i class="fa-solid fa-house"></i> Home</a>
+            </div>
+        </div>
+    </div>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

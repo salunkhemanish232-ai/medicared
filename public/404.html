@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicare - Page Not Found</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<nav class="navbar" role="navigation" aria-label="Main Navigation">
+    <div class="navbar-container">
+        <a href="index.html" class="logo">
+            <i class="fa-solid fa-hospital"></i> Medi<span>care</span>
+        </a>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <ul class="menu" id="nav-menu">
+            <li><a href="index.html" class="nav-link">Home</a></li>
+            <li><a href="about.html" class="nav-link">About</a></li>
+            <li><a href="services.html" class="nav-link">Services</a></li>
+            <li><a href="doctors.html" class="nav-link">Doctors</a></li>
+            <li><a href="appointments.html" class="nav-link">Appointments</a></li>
+            <li><a href="contact.html" class="nav-link">Contact</a></li>
+        </ul>
+    </div>
+</nav>
+
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+    <span class="breadcrumb-separator">/</span>
+    <span aria-current="page">Page not found</span>
+</nav>
+
+<main class="page-shell" style="padding-top: 48px; padding-bottom: 72px;">
+    <section class="error-state" aria-live="polite">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <strong style="font-size: clamp(2.2rem, 5vw, 4rem);">404</strong>
+        <h1 style="margin: 0; color: var(--navy);">This page is not available.</h1>
+        <p style="max-width: 560px; margin: 0;">The resource you’re looking for may have moved, been removed, or never existed. Let’s get you back to a safe, secure care journey.</p>
+        <div class="hero-actions" style="margin-top: 8px;">
+            <a href="index.html" class="btn"><i class="fa-solid fa-house"></i> Return home</a>
+            <a href="appointments.html" class="btn btn-outline"><i class="fa-solid fa-calendar-check"></i> Book appointment</a>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer" role="contentinfo">
+    <p>&copy; 2026 Medicare. All rights reserved.</p>
+    <p>Modern healthcare, simple appointments, trusted support.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

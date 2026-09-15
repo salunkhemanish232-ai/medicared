@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Details - Medicare</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<nav class="navbar" role="navigation" aria-label="Main Navigation">
+    <div class="navbar-container">
+        <a href="index.html" class="logo"><i class="fa-solid fa-hospital"></i> Medi<span>care</span></a>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation menu"><i class="fa-solid fa-bars"></i></button>
+        <ul class="menu" id="nav-menu">
+            <li><a href="index.html" class="nav-link">Home</a></li>
+            <li><a href="about.html" class="nav-link">About</a></li>
+            <li><a href="services.html" class="nav-link active">Services</a></li>
+            <li><a href="doctors.html" class="nav-link">Doctors</a></li>
+            <li><a href="appointments.html" class="nav-link">Appointments</a></li>
+            <li><a href="contact.html" class="nav-link">Contact</a></li>
+        </ul>
+    </div>
+</nav>
+
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+    <span class="breadcrumb-separator">/</span>
+    <a href="services.html">Services</a>
+    <span class="breadcrumb-separator">/</span>
+    <span aria-current="page">Emergency care</span>
+</nav>
+
+<main class="page-shell" style="padding-top:40px; padding-bottom:72px;">
+    <section class="website-section">
+        <div class="about-story-grid">
+            <div class="about-story-copy">
+                <span class="tag tag--primary"><i class="fa-solid fa-truck-medical"></i> Emergency care</span>
+                <h2>Fast clinical guidance for urgent health concerns.</h2>
+                <p>Emergency care through Medicare supports patient triage and guidance toward the right next step. We do not provide emergency medical treatment or emergency room services.</p>
+                <p>For real emergencies, contact the appropriate local emergency service provider immediately. Medicare can help route and coordinate non-urgent follow-up care.</p>
+                <div class="hero-actions">
+                    <a href="contact.html" class="btn"><i class="fa-solid fa-headset"></i> Contact support</a>
+                    <a href="services.html" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Back to services</a>
+                </div>
+            </div>
+            <div class="about-story-panel">
+                <div><i class="fa-solid fa-hourglass-half"></i><strong>Availability</strong><span>Support and guidance during working hours and contact routing for urgent queries</span></div>
+                <div><i class="fa-solid fa-location-dot"></i><strong>Appropriate care</strong><span>Recommended local emergency services or next-step clinic care</span></div>
+                <div><i class="fa-solid fa-shield-heart"></i><strong>Patient safety</strong><span>Professional guidance without replacing emergency medical services</span></div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer" role="contentinfo">
+    <p>&copy; 2026 Medicare. All rights reserved.</p>
+    <p>Clear service detail pages built around patient safety and care pathways.</p>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

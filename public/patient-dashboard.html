@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicare - Patient Dashboard</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="dashboard-container">
+    <aside class="dashboard-sidebar">
+        <a href="index.html" class="dashboard-logo-area"><i class="fa-solid fa-hospital"></i><span>Medicare</span></a>
+        <nav class="dashboard-nav-links" aria-label="Patient portal">
+            <a class="active" href="patient-dashboard.html"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+            <a href="appointments.html"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+            <a href="profile.html"><i class="fa-solid fa-user-gear"></i> Profile</a>
+            <a href="doctors.html"><i class="fa-solid fa-user-doctor"></i> Doctors</a>
+            <a href="health-resources.html"><i class="fa-solid fa-book-medical"></i> Health Resources</a>
+            <a href="contact.html"><i class="fa-solid fa-headset"></i> Support</a>
+        </nav>
+        <div class="dashboard-sidebar-footer">
+            <a href="index.html"><i class="fa-solid fa-house"></i> Return Home</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="dashboard-header">
+            <span class="tag"><i class="fa-solid fa-heart-pulse"></i> Patient Portal</span>
+            <h1 id="patientWelcomeTitle">Welcome back</h1>
+            <p>Your care dashboard with appointments, records, reports, and support in one place.</p>
+        </header>
+
+        <section class="website-section">
+            <div class="simple-card-grid" id="patientOverviewCards">
+                <article class="feature-card"><i class="fa-solid fa-calendar-check flow-icon"></i><h2>Upcoming appointments</h2><p class="subtitle">View and manage your scheduled care visits.</p><button class="btn" type="button" onclick="window.location.href='appointments.html'">Open schedule</button></article>
+                <article class="feature-card"><i class="fa-solid fa-file-medical flow-icon"></i><h2>Medical records</h2><p class="subtitle">Access only the records authorized for your account.</p><button class="btn btn-outline" type="button" onclick="window.location.href='profile.html'">View records</button></article>
+                <article class="feature-card"><i class="fa-solid fa-vial-circle-check flow-icon"></i><h2>Lab reports</h2><p class="subtitle">Review authorized test results and download reports.</p><button class="btn btn-outline" type="button" onclick="window.location.href='diagnostics.html'">View reports</button></article>
+            </div>
+        </section>
+
+        <section class="dashboard-care-strip">
+            <div>
+                <span class="eyebrow">Your next step</span>
+                <h2>Book a visit or message support</h2>
+                <p>Secure care coordination for appointments, consults, and follow-up support.</p>
+            </div>
+            <div class="hero-actions">
+                <button type="button" class="btn" onclick="window.location.href='appointments.html'"><i class="fa-solid fa-calendar-plus"></i> Book appointment</button>
+                <button type="button" class="btn btn-outline" onclick="window.location.href='contact.html'"><i class="fa-solid fa-headset"></i> Contact support</button>
+            </div>
+        </section>
+
+        <section class="website-section">
+            <div class="simple-card-grid">
+                <article class="feature-card">
+                    <h3><i class="fa-solid fa-clock"></i> Upcoming appointments</h3>
+                    <div id="patientUpcomingAppointments" class="info-panel"></div>
+                </article>
+                <article class="feature-card">
+                    <h3><i class="fa-solid fa-history"></i> Appointment history</h3>
+                    <div id="patientAppointmentHistory" class="info-panel"></div>
+                </article>
+            </div>
+        </section>
+
+        <section class="website-section">
+            <div class="simple-card-grid">
+                <article class="feature-card">
+                    <h3><i class="fa-solid fa-user-doctor"></i> Doctor consultations</h3>
+                    <div id="patientConsultations" class="info-panel"></div>
+                </article>
+                <article class="feature-card">
+                    <h3><i class="fa-solid fa-file-waveform"></i> Prescriptions</h3>
+                    <div id="patientPrescriptions" class="info-panel"></div>
+                </article>
+            </div>
+        </section>
+
+        <section class="website-section">
+            <div class="simple-card-grid">
+                <article class="feature-card">
+                    <h3><i class="fa-solid fa-notes-medical"></i> Medical records</h3>
+                    <div id="patientRecords" class="info-panel"></div>
+                </article>
+                <article class="feature-card">
+                    <h3><i class="fa-solid fa-flask-vial"></i> Lab reports</h3>
+                    <div id="patientLabReports" class="info-panel"></div>
+                </article>
+            </div>
+        </section>
+
+        <section class="website-section">
+            <div class="simple-card-grid">
+                <article class="feature-card">
+                    <h3><i class="fa-solid fa-bell"></i> Notifications</h3>
+                    <div id="patientNotifications" class="info-panel"></div>
+                </article>
+                <article class="feature-card">
+                    <h3><i class="fa-solid fa-book-medical"></i> Health resources</h3>
+                    <div id="patientResources" class="info-panel"></div>
+                </article>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script src="/app.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const currentUser = JSON.parse(localStorage.getItem('medicareCurrentUser') || 'null');
+    if (!currentUser) {
+        window.location.href = '/login.html';
+        return;
+    }
+
+    const patientWelcome = document.getElementById('patientWelcomeTitle');
+    if (patientWelcome) patientWelcome.textContent = `Welcome, ${currentUser.name || 'Patient'}`;
+
+    const renderList = (selector, items, emptyText) => {
+        const target = document.getElementById(selector);
+        if (!target) return;
+        if (!items || !items.length) {
+            target.innerHTML = `<p class="subtitle">${emptyText}</p>`;
+            return;
+        }
+        target.innerHTML = items.map((item) => `
+            <div class="info-row">
+                <strong>${item.title || item.name || item.doctor || item.testName || item.medication || item.message || item.label || 'Item'}</strong>
+                <span>${item.date || item.status || item.department || item.type || item.dosage || item.summary || item.instructions || ''}</span>
+            </div>
+        `).join('');
+    };
+
+    try {
+        const response = await fetch('/api/patient/dashboard', { credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Unable to load patient dashboard.');
+
+        const dashboard = data.dashboard;
+        renderList('patientUpcomingAppointments', dashboard.upcomingAppointments, 'No upcoming appointments.');
+        renderList('patientAppointmentHistory', dashboard.appointmentHistory, 'No appointment history yet.');
+        renderList('patientConsultations', dashboard.consultations, 'No consultation information available.');
+        renderList('patientPrescriptions', dashboard.prescriptions, 'No prescriptions yet.');
+        renderList('patientRecords', dashboard.medicalRecords, 'No authorized medical records yet.');
+        renderList('patientLabReports', dashboard.labReports, 'No lab reports available.');
+        renderList('patientNotifications', dashboard.notifications, 'No notifications.');
+        renderList('patientResources', dashboard.healthResources, 'No health resources yet.');
+    } catch (error) {
+        const target = document.getElementById('patientUpcomingAppointments');
+        if (target) target.innerHTML = `<p class="subtitle">${error.message}</p>`;
+    }
+});
+</script>
+</body>
+</html>

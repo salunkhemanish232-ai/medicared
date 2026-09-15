@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicare - Verify Email</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="auth-body">
+<main class="auth-main">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <i class="fa-solid fa-envelope-circle-check auth-icon"></i>
+                <span class="tag tag--primary">Email verification</span>
+                <h1>Confirm your email address.</h1>
+                <p class="subtitle">This secure check helps protect your account and your healthcare information.</p>
+            </div>
+            <div id="verifyEmailMessage" class="success-banner" aria-live="polite"></div>
+            <div id="verifyEmailError" class="form-error" role="alert"></div>
+            <div class="auth-footer">
+                <a href="login.html" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Back to login</a>
+            </div>
+        </div>
+    </div>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

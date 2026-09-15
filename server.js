@@ -88,11 +88,23 @@ const STORE_PRODUCTS = [
     { id: 'M006', name: 'Electrolyte care pack', category: 'Wellness', price: 'Rs 99', icon: 'fa-glass-water', description: 'Hydration support. Ask your clinician when needed.' }
 ];
 
+const VERIFIED_FAQS = [
+    { question: 'How do I book an appointment?', answer: 'Choose a doctor, select an available date and time, then submit your reason for visit. Your request appears in your portal after submission.' },
+    { question: 'How do I reschedule or cancel?', answer: 'Open Appointments from your patient portal and use the available action on the appointment. The care team is notified of the change.' },
+    { question: 'Where can I find my reports?', answer: 'Authorized lab reports, prescriptions, and consultation notes appear in your private patient dashboard.' },
+    { question: 'Can the assistant diagnose me?', answer: 'No. Medicare navigation provides verified service information and appointment guidance only. Speak with a qualified clinician for medical advice.' }
+];
+
 const VALID_STATUS = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
+const VALID_ROLES = ['patient', 'doctor', 'admin', 'staff'];
 let mysqlPool = null;
 let storageMode = 'json';
 const adminSessions = new Map();
+const patientSessions = new Map();
+const authSessions = new Map();
 const loginAttempts = new Map();
+const passwordResetTokens = new Map();
+const emailVerificationTokens = new Map();
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const MAX_LOGIN_ATTEMPTS = 5;
 
@@ -103,7 +115,12 @@ function getDefaultDatabase() {
         appointments: [],
         patients: [],
         messages: [],
-        doctors: DEFAULT_DOCTORS
+        doctors: DEFAULT_DOCTORS,
+        medicalRecords: [],
+        labReports: [],
+        prescriptions: [],
+        notifications: [],
+        auditLogs: []
     };
 }
 
@@ -125,6 +142,11 @@ function readLegacyDatabase() {
         if (Array.isArray(parsed.patients)) database.patients = parsed.patients;
         if (Array.isArray(parsed.messages)) database.messages = parsed.messages;
         if (Array.isArray(parsed.doctors)) database.doctors = parsed.doctors;
+        if (Array.isArray(parsed.medicalRecords)) database.medicalRecords = parsed.medicalRecords;
+        if (Array.isArray(parsed.labReports)) database.labReports = parsed.labReports;
+        if (Array.isArray(parsed.prescriptions)) database.prescriptions = parsed.prescriptions;
+        if (Array.isArray(parsed.notifications)) database.notifications = parsed.notifications;
+        if (Array.isArray(parsed.auditLogs)) database.auditLogs = parsed.auditLogs;
         return database;
     } catch (error) {
         const emptyDatabase = getDefaultDatabase();
@@ -264,6 +286,68 @@ async function ensureDatabase() {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
 
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS medical_records (
+            id VARCHAR(255) PRIMARY KEY,
+            patientEmail VARCHAR(255) NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            summary TEXT NOT NULL,
+            date VARCHAR(255) NOT NULL,
+            doctor VARCHAR(255) NOT NULL,
+            accessLevel VARCHAR(50) NOT NULL,
+            createdAt DATETIME NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS lab_reports (
+            id VARCHAR(255) PRIMARY KEY,
+            patientEmail VARCHAR(255) NOT NULL,
+            testName VARCHAR(255) NOT NULL,
+            status VARCHAR(50) NOT NULL,
+            date VARCHAR(255) NOT NULL,
+            fileName VARCHAR(255) NOT NULL,
+            createdAt DATETIME NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS prescriptions (
+            id VARCHAR(255) PRIMARY KEY,
+            patientEmail VARCHAR(255) NOT NULL,
+            medication VARCHAR(255) NOT NULL,
+            dosage VARCHAR(255) NOT NULL,
+            instructions TEXT NOT NULL,
+            doctor VARCHAR(255) NOT NULL,
+            date VARCHAR(255) NOT NULL,
+            createdAt DATETIME NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS notifications (
+            id VARCHAR(255) PRIMARY KEY,
+            patientEmail VARCHAR(255) NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            message TEXT NOT NULL,
+            type VARCHAR(50) NOT NULL,
+            isRead BOOLEAN NOT NULL DEFAULT false,
+            createdAt DATETIME NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS audit_logs (
+            id VARCHAR(255) PRIMARY KEY,
+            action VARCHAR(100) NOT NULL,
+            resource VARCHAR(100) NOT NULL,
+            resourceId VARCHAR(255) NOT NULL,
+            actor VARCHAR(255) NOT NULL,
+            ip VARCHAR(255) NOT NULL,
+            createdAt DATETIME NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
     const [doctorRows] = await pool.query('SELECT * FROM doctors');
     const existingDoctorNames = new Set((doctorRows || []).map((doctor) => doctor.name));
     const missingDoctors = DEFAULT_DOCTORS.filter((doctor) => !existingDoctorNames.has(doctor.name));
@@ -282,8 +366,13 @@ async function ensureDatabase() {
     const [patients] = await pool.query('SELECT * FROM patients ORDER BY id ASC');
     const [messages] = await pool.query('SELECT * FROM messages ORDER BY createdAt ASC');
     const [doctors] = await pool.query('SELECT * FROM doctors ORDER BY id ASC');
+    const [medicalRecords] = await pool.query('SELECT * FROM medical_records ORDER BY createdAt ASC');
+    const [labReports] = await pool.query('SELECT * FROM lab_reports ORDER BY createdAt ASC');
+    const [prescriptions] = await pool.query('SELECT * FROM prescriptions ORDER BY createdAt ASC');
+    const [notifications] = await pool.query('SELECT * FROM notifications ORDER BY createdAt ASC');
+    const [auditLogs] = await pool.query('SELECT * FROM audit_logs ORDER BY createdAt ASC');
 
-    return { users, admins, appointments, patients, messages, doctors };
+    return { users, admins, appointments, patients, messages, doctors, medicalRecords, labReports, prescriptions, notifications, auditLogs };
 }
 
 async function readDatabase() {
@@ -307,6 +396,11 @@ async function writeDatabase(database) {
     await pool.query('DELETE FROM patients');
     await pool.query('DELETE FROM messages');
     await pool.query('DELETE FROM doctors');
+    await pool.query('DELETE FROM medical_records');
+    await pool.query('DELETE FROM lab_reports');
+    await pool.query('DELETE FROM prescriptions');
+    await pool.query('DELETE FROM notifications');
+    await pool.query('DELETE FROM audit_logs');
 
     for (const user of database.users || []) {
         await pool.query('INSERT INTO users (id, name, email, phone, age, password, createdAt, lastLoginAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [user.id, user.name, user.email, user.phone, Number(user.age), user.password, user.createdAt, user.lastLoginAt || null]);
@@ -330,6 +424,26 @@ async function writeDatabase(database) {
 
     for (const doctor of database.doctors || []) {
         await pool.query('INSERT INTO doctors (id, name, department, specialty, fee, availability, photo) VALUES (?, ?, ?, ?, ?, ?, ?)', [doctor.id, doctor.name, doctor.department, doctor.specialty, doctor.fee, doctor.availability, doctor.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80']);
+    }
+
+    for (const record of database.medicalRecords || []) {
+        await pool.query('INSERT INTO medical_records (id, patientEmail, title, summary, date, doctor, accessLevel, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [record.id, record.patientEmail, record.title, record.summary, record.date, record.doctor, record.accessLevel || 'authorized', record.createdAt]);
+    }
+
+    for (const report of database.labReports || []) {
+        await pool.query('INSERT INTO lab_reports (id, patientEmail, testName, status, date, fileName, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)', [report.id, report.patientEmail, report.testName, report.status, report.date, report.fileName, report.createdAt]);
+    }
+
+    for (const prescription of database.prescriptions || []) {
+        await pool.query('INSERT INTO prescriptions (id, patientEmail, medication, dosage, instructions, doctor, date, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [prescription.id, prescription.patientEmail, prescription.medication, prescription.dosage, prescription.instructions, prescription.doctor, prescription.date, prescription.createdAt]);
+    }
+
+    for (const notification of database.notifications || []) {
+        await pool.query('INSERT INTO notifications (id, patientEmail, title, message, type, isRead, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)', [notification.id, notification.patientEmail, notification.title, notification.message, notification.type, notification.isRead ? 1 : 0, notification.createdAt]);
+    }
+
+    for (const auditLog of database.auditLogs || []) {
+        await pool.query('INSERT INTO audit_logs (id, action, resource, resourceId, actor, ip, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)', [auditLog.id, auditLog.action, auditLog.resource, auditLog.resourceId, auditLog.actor, auditLog.ip, auditLog.createdAt]);
     }
 }
 
@@ -360,8 +474,27 @@ function readBody(request) {
     });
 }
 
+function sanitizeRole(role) {
+    const normalizedRole = String(role || 'patient').trim().toLowerCase();
+    return VALID_ROLES.includes(normalizedRole) ? normalizedRole : 'patient';
+}
+
+function isStrongPassword(password) {
+    return /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(String(password || ''));
+}
+
 function publicUser(user) {
-    return { id: user.id, name: user.name, email: user.email, phone: user.phone, age: user.age, createdAt: user.createdAt || null, lastLoginAt: user.lastLoginAt || null };
+    return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        age: user.age,
+        role: user.role || 'patient',
+        emailVerified: Boolean(user.emailVerified),
+        createdAt: user.createdAt || null,
+        lastLoginAt: user.lastLoginAt || null
+    };
 }
 
 function publicAdmin(admin) {
@@ -408,8 +541,96 @@ function sanitizeEmail(email) {
     return String(email || '').trim().toLowerCase();
 }
 
+function addNotification(database, patientEmail, title, message, type = 'update') {
+    database.notifications = database.notifications || [];
+    database.notifications.push({
+        id: crypto.randomUUID(),
+        patientEmail: sanitizeEmail(patientEmail),
+        title,
+        message,
+        type,
+        isRead: false,
+        createdAt: new Date().toISOString()
+    });
+}
+
+function addAuditLog(database, request, action, resource, resourceId, actor) {
+    database.auditLogs = database.auditLogs || [];
+    database.auditLogs.push({
+        id: crypto.randomUUID(),
+        action,
+        resource,
+        resourceId,
+        actor: actor || 'system',
+        ip: getClientAddress(request),
+        createdAt: new Date().toISOString()
+    });
+}
+
+function isSameOriginRequest(request) {
+    const origin = String(request.headers.origin || '');
+    if (!origin) return true;
+    const expectedOrigin = `http://${request.headers.host || 'localhost'}`;
+    const expectedSecureOrigin = `https://${request.headers.host || 'localhost'}`;
+    return origin === expectedOrigin || origin === expectedSecureOrigin;
+}
+
 function getClientAddress(request) {
     return String(request.headers['x-forwarded-for'] || request.socket.remoteAddress || 'unknown').split(',')[0].trim();
+}
+
+function getRequestCookies(request) {
+    const cookieHeader = String(request.headers.cookie || '');
+    const cookies = {};
+    for (const chunk of cookieHeader.split(';')) {
+        const [key, ...rest] = chunk.split('=');
+        if (!key) continue;
+        const cookieName = key.trim();
+        if (!cookieName) continue;
+        cookies[cookieName] = rest.join('=').trim();
+    }
+    return cookies;
+}
+
+function appendCookie(response, cookieValue) {
+    const existing = response.getHeader('Set-Cookie');
+    if (Array.isArray(existing)) {
+        response.setHeader('Set-Cookie', [...existing, cookieValue]);
+        return;
+    }
+    if (existing) {
+        response.setHeader('Set-Cookie', [String(existing), cookieValue]);
+        return;
+    }
+    response.setHeader('Set-Cookie', cookieValue);
+}
+
+function setSessionCookie(response, name, value, maxAgeSeconds = 60 * 60 * 24 * 7) {
+    let cookieValue = `${name}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSeconds}`;
+    if (process.env.NODE_ENV === 'production') {
+        cookieValue += '; Secure';
+    }
+    appendCookie(response, cookieValue);
+}
+
+function getRequestSession(request) {
+    const cookies = getRequestCookies(request);
+    const patientSession = patientSessions.get(cookies.medicare_session || '');
+    const adminSession = adminSessions.get(cookies.medicare_admin_session || '');
+    const authSession = authSessions.get(cookies.medicare_session || '');
+    return { patient: patientSession || authSession || null, admin: adminSession || null };
+}
+
+function getAuthenticatedUserSession(request) {
+    const cookies = getRequestCookies(request);
+    const token = cookies.medicare_session || '';
+    const session = token ? authSessions.get(token) : null;
+    if (!session) return null;
+    if (Date.now() - session.createdAt > 7 * 24 * 60 * 60 * 1000) {
+        authSessions.delete(token);
+        return null;
+    }
+    return session;
 }
 
 function loginRateKey(request, email, type) {
@@ -441,8 +662,10 @@ function clearLoginFailures(key) {
 }
 
 function isAdminRequest(request) {
+    const cookies = getRequestCookies(request);
+    const adminCookieToken = cookies.medicare_admin_session || '';
     const authorization = String(request.headers.authorization || '');
-    const token = authorization.startsWith('Bearer ') ? authorization.slice(7) : '';
+    const token = authorization.startsWith('Bearer ') ? authorization.slice(7) : adminCookieToken;
     const session = token ? adminSessions.get(token) : null;
     if (!session) return false;
     if (Date.now() - session.createdAt > 8 * 60 * 60 * 1000) {
@@ -450,6 +673,39 @@ function isAdminRequest(request) {
         return false;
     }
     return true;
+}
+
+function isPatientRequest(request, patientEmail) {
+    const cookies = getRequestCookies(request);
+    const token = cookies.medicare_session || '';
+    const session = token ? patientSessions.get(token) : null;
+    if (!session) return false;
+    if (Date.now() - session.createdAt > 7 * 24 * 60 * 60 * 1000) {
+        patientSessions.delete(token);
+        return false;
+    }
+    if (patientEmail && session.email !== patientEmail) return false;
+    return true;
+}
+
+function getAuthenticatedRoleSession(request, role) {
+    const session = getAuthenticatedUserSession(request);
+    return session && session.role === role ? session : null;
+}
+
+function getAuthorizedDoctorContext(request, database) {
+    const session = getAuthenticatedRoleSession(request, 'doctor');
+    if (!session) return null;
+    const user = database.users.find((item) => item.id === session.userId && item.role === 'doctor');
+    if (!user) return null;
+    const doctor = database.doctors.find((item) => item.name.toLowerCase() === String(user.name || '').toLowerCase());
+    const doctorNames = new Set([user.name, doctor?.name].filter(Boolean).map((name) => String(name).trim().toLowerCase()));
+    const ownsAppointment = (appointment) => doctorNames.has(String(appointment.doctor || '').split(' - ')[0].trim().toLowerCase());
+    return { session, user, doctor, doctorNames, ownsAppointment };
+}
+
+function getDoctorPatientEmails(database, doctorContext) {
+    return new Set(database.appointments.filter(doctorContext.ownsAppointment).map((appointment) => sanitizeEmail(appointment.patient)));
 }
 
 function requiresAdmin(route, method) {
@@ -470,13 +726,322 @@ async function handleApi(request, response, requestUrl) {
     }
 
     const database = await readDatabase();
+    let body;
+    if (method !== 'GET') {
+        try {
+            body = await readBody(request);
+        } catch (error) {
+            return sendError(response, 400, error.message);
+        }
+    }
 
     if (method === 'GET' && route === '/api/health') {
         return sendJson(response, 200, { status: 'ok', service: 'Medicare API', storage: storageMode, persistentDataDirectory: DATABASE_DIR, timestamp: new Date().toISOString() });
     }
 
     if (method === 'GET' && route === '/api/doctors') {
-        return sendJson(response, 200, { doctors: database.doctors });
+        const search = String(requestUrl.searchParams.get('search') || '').trim().toLowerCase();
+        const specialty = String(requestUrl.searchParams.get('specialty') || '').trim().toLowerCase();
+        const doctors = database.doctors.filter((doctor) => {
+            const searchable = `${doctor.name} ${doctor.department} ${doctor.specialty}`.toLowerCase();
+            return (!search || searchable.includes(search)) && (!specialty || doctor.specialty.toLowerCase().includes(specialty) || doctor.department.toLowerCase().includes(specialty));
+        });
+        return sendJson(response, 200, { doctors });
+    }
+
+    if (method === 'GET' && route === '/api/availability') {
+        const doctorName = String(requestUrl.searchParams.get('doctor') || '').trim().toLowerCase();
+        const date = String(requestUrl.searchParams.get('date') || '').trim();
+        const doctor = database.doctors.find((item) => item.name.toLowerCase() === doctorName || `${item.name} - ${item.department}`.toLowerCase() === doctorName);
+        if (!doctor) return sendError(response, 404, 'Doctor not found.');
+        const bookedTimes = database.appointments.filter((item) => item.doctor.toLowerCase() === `${doctor.name} - ${doctor.department}`.toLowerCase() && item.date === date && ['Pending', 'Confirmed'].includes(item.status)).map((item) => item.time);
+        return sendJson(response, 200, { doctor, date, bookedTimes, available: bookedTimes.length < 20 });
+    }
+
+    if (method === 'GET' && route === '/api/navigation') {
+        const query = String(requestUrl.searchParams.get('q') || '').trim().toLowerCase();
+        const services = [
+            { name: 'Appointments', link: '/appointments.html', keywords: 'book schedule visit' },
+            { name: 'Diagnostics', link: '/diagnostics.html', keywords: 'lab report test results' },
+            { name: 'Health resources', link: '/health-resources.html', keywords: 'education prevention wellness' },
+            { name: 'Emergency guidance', link: '/emergency.html', keywords: 'urgent emergency help' }
+        ];
+        const departments = [...new Set(database.doctors.map((doctor) => doctor.department))];
+        const doctors = database.doctors.filter((doctor) => !query || `${doctor.name} ${doctor.department} ${doctor.specialty}`.toLowerCase().includes(query));
+        const matchingServices = services.filter((service) => !query || `${service.name} ${service.keywords}`.toLowerCase().includes(query));
+        const faqs = VERIFIED_FAQS.filter((faq) => !query || `${faq.question} ${faq.answer}`.toLowerCase().includes(query));
+        addAuditLog(database, request, 'navigation_search', 'verified_navigation', query || 'all', 'public');
+        await writeDatabase(database);
+        return sendJson(response, 200, { departments, doctors, services: matchingServices, faqs, disclaimer: 'Navigation information is not diagnosis or treatment advice.' });
+    }
+
+    if (method === 'GET' && route === '/api/notifications') {
+        const session = getAuthenticatedRoleSession(request, 'patient');
+        if (!session) return sendError(response, 401, 'Patient authentication is required.');
+        const user = database.users.find((item) => item.id === session.userId);
+        if (!user) return sendError(response, 404, 'Patient account not found.');
+        return sendJson(response, 200, { notifications: (database.notifications || []).filter((item) => item.patientEmail === user.email) });
+    }
+
+    const notificationMatch = route.match(/^\/api\/notifications\/([^/]+)\/read$/);
+    if (method === 'PUT' && notificationMatch) {
+        const session = getAuthenticatedRoleSession(request, 'patient');
+        if (!session) return sendError(response, 401, 'Patient authentication is required.');
+        const user = database.users.find((item) => item.id === session.userId);
+        const notification = (database.notifications || []).find((item) => item.id === notificationMatch[1] && item.patientEmail === user?.email);
+        if (!notification) return sendError(response, 404, 'Notification not found.');
+        notification.isRead = true;
+        addAuditLog(database, request, 'notification_read', 'notification', notification.id, user.email);
+        await writeDatabase(database);
+        return sendJson(response, 200, { notification });
+    }
+
+    if (method === 'GET' && route === '/api/patient/dashboard') {
+        const session = getAuthenticatedRoleSession(request, 'patient');
+        if (!session) return sendError(response, 401, 'Patient authentication is required.');
+        const user = database.users.find((item) => item.id === session.userId);
+        if (!user) return sendError(response, 404, 'Patient account not found.');
+
+        const patientEmail = user.email;
+        const upcomingAppointments = database.appointments
+            .filter((item) => item.patient === patientEmail && ['Pending', 'Confirmed'].includes(item.status))
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
+        const appointmentHistory = database.appointments
+            .filter((item) => item.patient === patientEmail)
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+        const consultations = database.doctors.map((doctor) => ({
+            id: doctor.id,
+            doctor: doctor.name,
+            department: doctor.department,
+            specialty: doctor.specialty,
+            nextSlot: doctor.availability,
+            fee: doctor.fee
+        })).slice(0, 3);
+        const medicalRecords = (database.medicalRecords || []).filter((record) => record.patientEmail === patientEmail);
+        const labReports = (database.labReports || []).filter((report) => report.patientEmail === patientEmail);
+        const prescriptions = (database.prescriptions || []).filter((prescription) => prescription.patientEmail === patientEmail);
+        const notifications = (database.notifications || []).filter((notification) => notification.patientEmail === patientEmail).slice(0, 5);
+
+        return sendJson(response, 200, {
+            dashboard: {
+                user: publicUser(user),
+                upcomingAppointments,
+                appointmentHistory,
+                consultations,
+                medicalRecords,
+                labReports,
+                prescriptions,
+                notifications,
+                healthResources: [
+                    { title: 'Preventive care', link: '/health-resources.html' },
+                    { title: 'Telemedicine', link: '/telemedicine.html' },
+                    { title: 'Diagnostics', link: '/diagnostics.html' }
+                ],
+                support: [{ title: 'Contact care team', link: '/contact.html' }, { title: 'Emergency guidance', link: '/emergency.html' }]
+            }
+        });
+    }
+
+    if (route === '/api/doctor/dashboard' && method === 'GET') {
+        const doctorContext = getAuthorizedDoctorContext(request, database);
+        if (!doctorContext) return sendError(response, 401, 'Doctor authentication is required.');
+
+        const doctorAppointments = database.appointments.filter(doctorContext.ownsAppointment);
+        const patientEmails = getDoctorPatientEmails(database, doctorContext);
+        const patients = database.users
+            .filter((user) => user.role === 'patient' && patientEmails.has(sanitizeEmail(user.email)))
+            .map(publicUser);
+        const today = new Date().toISOString().slice(0, 10);
+        const patientDetails = patients.map((patient) => ({
+            ...patient,
+            appointments: doctorAppointments.filter((item) => sanitizeEmail(item.patient) === sanitizeEmail(patient.email)),
+            records: (database.medicalRecords || []).filter((item) => item.patientEmail === patient.email && doctorContext.doctorNames.has(String(item.doctor || '').split(' - ')[0].trim().toLowerCase())),
+            prescriptions: (database.prescriptions || []).filter((item) => item.patientEmail === patient.email && doctorContext.doctorNames.has(String(item.doctor || '').split(' - ')[0].trim().toLowerCase()))
+        }));
+
+        return sendJson(response, 200, {
+            dashboard: {
+                user: publicUser(doctorContext.user),
+                doctor: doctorContext.doctor,
+                todayAppointments: doctorAppointments.filter((item) => item.date === today),
+                upcomingAppointments: doctorAppointments.filter((item) => item.date >= today && item.status !== 'Cancelled').sort((a, b) => new Date(a.date) - new Date(b.date)),
+                patientList: patients,
+                patientDetails,
+                authorizedLabReports: (database.labReports || []).filter((report) => patientEmails.has(sanitizeEmail(report.patientEmail))),
+                consultationNotes: (database.medicalRecords || []).filter((record) => doctorContext.doctorNames.has(String(record.doctor || '').split(' - ')[0].trim().toLowerCase())),
+                availability: doctorContext.doctor?.availability || 'Contact administration to set availability',
+                unreadMessages: database.messages.filter((message) => message.doctorEmail === doctorContext.user.email && !message.isRead).length
+            }
+        });
+    }
+
+    const doctorAppointmentMatch = route.match(/^\/api\/doctor\/appointments\/([^/]+)\/status$/);
+    if (method === 'PUT' && doctorAppointmentMatch) {
+        const doctorContext = getAuthorizedDoctorContext(request, database);
+        if (!doctorContext) return sendError(response, 401, 'Doctor authentication is required.');
+        const status = String(body.status || '').trim();
+        if (!VALID_STATUS.includes(status)) return sendError(response, 400, 'Invalid appointment status.');
+        const appointment = database.appointments.find((item) => item.id === doctorAppointmentMatch[1] && doctorContext.ownsAppointment(item));
+        if (!appointment) return sendError(response, 403, 'You are not authorized to update this appointment.');
+        appointment.status = status;
+        appointment.updatedAt = new Date().toISOString();
+        addNotification(database, appointment.patient, `Appointment ${status.toLowerCase()}`, `${appointment.doctor} on ${appointment.date} at ${appointment.time}.`, status.toLowerCase());
+        addAuditLog(database, request, 'appointment_status_updated', 'appointment', appointment.id, doctorContext.user.email);
+        await writeDatabase(database);
+        return sendJson(response, 200, { appointment });
+    }
+
+    const doctorNoteMatch = route.match(/^\/api\/doctor\/appointments\/([^/]+)\/notes$/);
+    if (method === 'POST' && doctorNoteMatch) {
+        const doctorContext = getAuthorizedDoctorContext(request, database);
+        if (!doctorContext) return sendError(response, 401, 'Doctor authentication is required.');
+        const appointment = database.appointments.find((item) => item.id === doctorNoteMatch[1] && doctorContext.ownsAppointment(item));
+        if (!appointment) return sendError(response, 403, 'You are not authorized to add notes for this appointment.');
+        const summary = String(body.summary || '').trim();
+        if (!summary) return sendError(response, 400, 'Consultation notes are required.');
+        const note = {
+            id: crypto.randomUUID(),
+            patientEmail: sanitizeEmail(appointment.patient),
+            title: String(body.title || 'Consultation note').trim(),
+            summary,
+            date: appointment.date,
+            doctor: doctorContext.user.name,
+            accessLevel: 'authorized',
+            createdAt: new Date().toISOString()
+        };
+        database.medicalRecords.push(note);
+        addAuditLog(database, request, 'consultation_note_created', 'medical_record', note.id, doctorContext.user.email);
+        await writeDatabase(database);
+        return sendJson(response, 201, { note });
+    }
+
+    const doctorPrescriptionMatch = route.match(/^\/api\/doctor\/appointments\/([^/]+)\/prescriptions$/);
+    if (method === 'POST' && doctorPrescriptionMatch) {
+        const doctorContext = getAuthorizedDoctorContext(request, database);
+        if (!doctorContext) return sendError(response, 401, 'Doctor authentication is required.');
+        const appointment = database.appointments.find((item) => item.id === doctorPrescriptionMatch[1] && doctorContext.ownsAppointment(item));
+        if (!appointment) return sendError(response, 403, 'You are not authorized to prescribe for this appointment.');
+        const prescription = {
+            id: crypto.randomUUID(),
+            patientEmail: sanitizeEmail(appointment.patient),
+            medication: String(body.medication || '').trim(),
+            dosage: String(body.dosage || '').trim(),
+            instructions: String(body.instructions || '').trim(),
+            doctor: doctorContext.user.name,
+            date: appointment.date,
+            createdAt: new Date().toISOString()
+        };
+        if (!prescription.medication || !prescription.dosage || !prescription.instructions) return sendError(response, 400, 'Complete all prescription fields.');
+        database.prescriptions.push(prescription);
+        addAuditLog(database, request, 'prescription_created', 'prescription', prescription.id, doctorContext.user.email);
+        await writeDatabase(database);
+        return sendJson(response, 201, { prescription });
+    }
+
+    const doctorPatientMatch = route.match(/^\/api\/doctor\/patients\/([^/]+)$/);
+    if (method === 'GET' && doctorPatientMatch) {
+        const doctorContext = getAuthorizedDoctorContext(request, database);
+        if (!doctorContext) return sendError(response, 401, 'Doctor authentication is required.');
+        const patientEmail = sanitizeEmail(decodeURIComponent(doctorPatientMatch[1]));
+        const patientEmails = getDoctorPatientEmails(database, doctorContext);
+        if (!patientEmails.has(patientEmail)) return sendError(response, 403, 'You are not authorized to view this patient.');
+        const patient = database.users.find((user) => sanitizeEmail(user.email) === patientEmail && user.role === 'patient');
+        if (!patient) return sendError(response, 404, 'Patient not found.');
+        addAuditLog(database, request, 'patient_record_viewed', 'patient', patientEmail, doctorContext.user.email);
+        await writeDatabase(database);
+        return sendJson(response, 200, {
+            patient: publicUser(patient),
+            appointments: database.appointments.filter((item) => sanitizeEmail(item.patient) === patientEmail && doctorContext.ownsAppointment(item)),
+            records: (database.medicalRecords || []).filter((item) => item.patientEmail === patientEmail && doctorContext.doctorNames.has(String(item.doctor || '').split(' - ')[0].trim().toLowerCase())),
+            prescriptions: (database.prescriptions || []).filter((item) => item.patientEmail === patientEmail && doctorContext.doctorNames.has(String(item.doctor || '').split(' - ')[0].trim().toLowerCase())),
+            labReports: (database.labReports || []).filter((item) => item.patientEmail === patientEmail)
+        });
+    }
+
+    if (method === 'PUT' && route === '/api/doctor/availability') {
+        const doctorContext = getAuthorizedDoctorContext(request, database);
+        if (!doctorContext) return sendError(response, 401, 'Doctor authentication is required.');
+        const availability = String(body.availability || '').trim();
+        if (!availability) return sendError(response, 400, 'Availability is required.');
+        if (!doctorContext.doctor) return sendError(response, 404, 'Doctor profile not found.');
+        doctorContext.doctor.availability = availability;
+        await writeDatabase(database);
+        return sendJson(response, 200, { availability });
+    }
+
+    if (method === 'PUT' && route === '/api/doctor/profile') {
+        const doctorContext = getAuthorizedDoctorContext(request, database);
+        if (!doctorContext) return sendError(response, 401, 'Doctor authentication is required.');
+        const previousName = doctorContext.user.name;
+        doctorContext.user.name = String(body.name || doctorContext.user.name).trim();
+        doctorContext.user.phone = String(body.phone || doctorContext.user.phone || '').trim();
+        doctorContext.user.age = Number(body.age || doctorContext.user.age);
+        if (!doctorContext.user.name || !Number.isInteger(doctorContext.user.age) || doctorContext.user.age < 18) return sendError(response, 400, 'Complete the doctor profile fields.');
+        if (doctorContext.doctor && doctorContext.doctor.name.toLowerCase() === previousName.toLowerCase()) doctorContext.doctor.name = doctorContext.user.name;
+        await writeDatabase(database);
+        return sendJson(response, 200, { user: publicUser(doctorContext.user) });
+    }
+
+    if (method === 'GET' && route === '/api/patient/appointments') {
+        const session = getAuthenticatedUserSession(request);
+        if (!session) return sendError(response, 401, 'Patient authentication is required.');
+        const user = database.users.find((item) => item.id === session.userId);
+        if (!user) return sendError(response, 404, 'Patient account not found.');
+        const appointments = database.appointments.filter((item) => item.patient === user.email);
+        return sendJson(response, 200, { appointments });
+    }
+
+    if (method === 'POST' && route === '/api/patient/appointments') {
+        const session = getAuthenticatedUserSession(request);
+        if (!session) return sendError(response, 401, 'Patient authentication is required.');
+        const user = database.users.find((item) => item.id === session.userId);
+        if (!user) return sendError(response, 404, 'Patient account not found.');
+        const appointment = {
+            id: crypto.randomUUID(),
+            doctor: String(body.doctor || '').trim(),
+            date: String(body.date || '').trim(),
+            time: String(body.time || '').trim(),
+            reason: String(body.reason || '').trim(),
+            patient: user.email,
+            status: 'Pending',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+        if (!appointment.doctor || !appointment.date || !appointment.time || !appointment.reason) {
+            return sendError(response, 400, 'Complete all appointment fields.');
+        }
+        database.appointments.push(appointment);
+        await writeDatabase(database);
+        return sendJson(response, 201, { appointment });
+    }
+
+    const patientAppointmentMatch = route.match(/^\/api\/patient\/appointments\/([^/]+)\/cancel$/);
+    if (method === 'POST' && patientAppointmentMatch) {
+        const session = getAuthenticatedUserSession(request);
+        if (!session) return sendError(response, 401, 'Patient authentication is required.');
+        const user = database.users.find((item) => item.id === session.userId);
+        if (!user) return sendError(response, 404, 'Patient account not found.');
+        const appointment = database.appointments.find((item) => item.id === patientAppointmentMatch[1] && item.patient === user.email);
+        if (!appointment) return sendError(response, 404, 'Appointment not found.');
+        appointment.status = 'Cancelled';
+        appointment.updatedAt = new Date().toISOString();
+        await writeDatabase(database);
+        return sendJson(response, 200, { appointment });
+    }
+
+    const patientRescheduleMatch = route.match(/^\/api\/patient\/appointments\/([^/]+)\/reschedule$/);
+    if (method === 'PUT' && patientRescheduleMatch) {
+        const session = getAuthenticatedUserSession(request);
+        if (!session) return sendError(response, 401, 'Patient authentication is required.');
+        const user = database.users.find((item) => item.id === session.userId);
+        if (!user) return sendError(response, 404, 'Patient account not found.');
+        const appointment = database.appointments.find((item) => item.id === patientRescheduleMatch[1] && item.patient === user.email);
+        if (!appointment) return sendError(response, 404, 'Appointment not found.');
+        appointment.date = String(body.date || appointment.date).trim();
+        appointment.time = String(body.time || appointment.time).trim();
+        appointment.updatedAt = new Date().toISOString();
+        await writeDatabase(database);
+        return sendJson(response, 200, { appointment });
     }
 
     if (method === 'GET' && route === '/api/store') {
@@ -499,24 +1064,16 @@ async function handleApi(request, response, requestUrl) {
         return sendJson(response, 200, { users: database.users.map(publicUser) });
     }
 
-    let body;
-    if (method !== 'GET') {
-        try {
-            body = await readBody(request);
-        } catch (error) {
-            return sendError(response, 400, error.message);
-        }
-    }
-
-    if (method === 'POST' && route === '/api/register') {
+    if (method === 'POST' && route === '/api/auth/register') {
         const name = String(body.name || '').trim();
         const email = sanitizeEmail(body.email);
         const phone = String(body.phone || '').trim();
         const age = Number(body.age);
         const password = String(body.password || '');
+        const role = sanitizeRole(body.role);
 
-        if (!name || !email || !/^\d{10}$/.test(phone) || !Number.isInteger(age) || age < 1 || age > 120 || password.length < 6) {
-            return sendError(response, 400, 'Enter valid details. Phone number must contain exactly 10 digits and password at least 6 characters.');
+        if (!name || !email || !/^\d{10}$/.test(phone) || !Number.isInteger(age) || age < 1 || age > 120 || !isStrongPassword(password)) {
+            return sendError(response, 400, 'Enter valid details. Use a strong password with at least 8 characters, one uppercase, one number, and one symbol.');
         }
 
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -534,19 +1091,32 @@ async function handleApi(request, response, requestUrl) {
             email,
             phone,
             age,
+            role,
             password: hashPassword(password),
+            emailVerified: false,
             createdAt: new Date().toISOString()
         };
 
         database.users.push(user);
         await writeDatabase(database);
-        return sendJson(response, 201, { user: publicUser(user) });
+
+        const sessionToken = crypto.randomBytes(32).toString('hex');
+        const sessionData = { userId: user.id, email: user.email, role, createdAt: Date.now() };
+        authSessions.set(sessionToken, sessionData);
+        patientSessions.set(sessionToken, sessionData);
+        setSessionCookie(response, 'medicare_session', sessionToken, 60 * 60 * 24 * 7);
+
+        return sendJson(response, 201, { user: publicUser(user), message: 'Registration successful.' });
     }
 
-    if (method === 'POST' && route === '/api/login') {
+    if (method === 'POST' && route === '/api/register') {
+        return handleApi({ ...request, url: '/api/auth/register' }, response, new URL('/api/auth/register', `http://${request.headers.host || 'localhost'}`));
+    }
+
+    if (method === 'POST' && route === '/api/auth/login') {
         const email = sanitizeEmail(body.email);
         const password = String(body.password || '');
-        const rateKey = loginRateKey(request, email, 'patient');
+        const rateKey = loginRateKey(request, email, 'auth');
         if (isLoginRateLimited(rateKey)) {
             return sendError(response, 429, 'Too many login attempts. Please try again in 15 minutes.');
         }
@@ -561,7 +1131,131 @@ async function handleApi(request, response, requestUrl) {
         user.lastLoginAt = new Date().toISOString();
         await writeDatabase(database);
 
-        return sendJson(response, 200, { user: { ...publicUser(user), role: 'patient' } });
+        const sessionToken = crypto.randomBytes(32).toString('hex');
+        const sessionData = { userId: user.id, email: user.email, role: user.role || 'patient', createdAt: Date.now() };
+        authSessions.set(sessionToken, sessionData);
+        patientSessions.set(sessionToken, sessionData);
+        setSessionCookie(response, 'medicare_session', sessionToken, 60 * 60 * 24 * 7);
+
+        return sendJson(response, 200, { user: { ...publicUser(user), role: user.role || 'patient' }, message: 'Login successful.' });
+    }
+
+    if (method === 'POST' && route === '/api/login') {
+        return handleApi({ ...request, url: '/api/auth/login' }, response, new URL('/api/auth/login', `http://${request.headers.host || 'localhost'}`));
+    }
+
+    if (method === 'POST' && route === '/api/auth/logout') {
+        const cookies = getRequestCookies(request);
+        const token = cookies.medicare_session || '';
+        if (token) {
+            authSessions.delete(token);
+            patientSessions.delete(token);
+        }
+        const adminToken = cookies.medicare_admin_session || '';
+        if (adminToken) adminSessions.delete(adminToken);
+        response.setHeader('Set-Cookie', [
+            'medicare_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0',
+            'medicare_admin_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0'
+        ]);
+        return sendJson(response, 200, { message: 'Logged out successfully.' });
+    }
+
+    if (method === 'GET' && route === '/api/auth/profile') {
+        const session = getAuthenticatedUserSession(request);
+        if (!session) return sendError(response, 401, 'Authentication required.');
+        const user = database.users.find((item) => item.id === session.userId);
+        if (!user) return sendError(response, 404, 'Account not found.');
+        return sendJson(response, 200, { user: publicUser(user) });
+    }
+
+    if (method === 'PUT' && route === '/api/auth/profile') {
+        const session = getAuthenticatedUserSession(request);
+        if (!session) return sendError(response, 401, 'Authentication required.');
+        const user = database.users.find((item) => item.id === session.userId);
+        if (!user) return sendError(response, 404, 'Account not found.');
+
+        const nextName = String(body.name || user.name).trim();
+        const nextPhone = String(body.phone || user.phone).trim();
+        const nextAge = Number(body.age ?? user.age);
+        const nextRole = sanitizeRole(body.role || user.role || 'patient');
+
+        if (!nextName || !/^\d{10}$/.test(nextPhone) || !Number.isInteger(nextAge) || nextAge < 1 || nextAge > 120) {
+            return sendError(response, 400, 'Complete valid profile information.');
+        }
+
+        user.name = nextName;
+        user.phone = nextPhone;
+        user.age = nextAge;
+        user.role = nextRole;
+
+        if (body.newPassword) {
+            const currentPassword = String(body.currentPassword || '');
+            if (!passwordMatches(currentPassword, user.password)) {
+                return sendError(response, 400, 'Current password is incorrect.');
+            }
+            if (!isStrongPassword(body.newPassword)) {
+                return sendError(response, 400, 'New password must include uppercase, number, and symbol.');
+            }
+            user.password = hashPassword(String(body.newPassword));
+        }
+
+        await writeDatabase(database);
+        return sendJson(response, 200, { user: publicUser(user), message: 'Profile updated successfully.' });
+    }
+
+    if (method === 'POST' && route === '/api/auth/forgot-password') {
+        const email = sanitizeEmail(body.email);
+        if (!email) return sendError(response, 400, 'Email is required.');
+        const user = database.users.find((item) => item.email === email);
+        if (!user) {
+            return sendJson(response, 200, { message: 'If the account exists, a password reset link has been generated.' });
+        }
+        const token = crypto.randomBytes(24).toString('hex');
+        passwordResetTokens.set(token, { userId: user.id, expiresAt: Date.now() + 60 * 60 * 1000 });
+        return sendJson(response, 200, { message: 'If the account exists, a password reset link has been generated.' });
+    }
+
+    if (method === 'POST' && route === '/api/auth/reset-password') {
+        const token = String(body.token || '').trim();
+        const password = String(body.password || '');
+        if (!token || !isStrongPassword(password)) {
+            return sendError(response, 400, 'A valid reset token and a strong password are required.');
+        }
+        const resetRequest = passwordResetTokens.get(token);
+        if (!resetRequest || resetRequest.expiresAt < Date.now()) {
+            return sendError(response, 400, 'This reset link is invalid or expired.');
+        }
+        const user = database.users.find((item) => item.id === resetRequest.userId);
+        if (!user) return sendError(response, 404, 'User not found.');
+        user.password = hashPassword(password);
+        passwordResetTokens.delete(token);
+        await writeDatabase(database);
+        return sendJson(response, 200, { message: 'Password reset successful.' });
+    }
+
+    if (method === 'POST' && route === '/api/auth/verify-email') {
+        const token = String(body.token || '').trim();
+        if (!token) return sendError(response, 400, 'Verification token is required.');
+        const verification = emailVerificationTokens.get(token);
+        if (!verification || verification.expiresAt < Date.now()) {
+            return sendError(response, 400, 'This verification link is invalid or expired.');
+        }
+        const user = database.users.find((item) => item.id === verification.userId);
+        if (!user) return sendError(response, 404, 'Account not found.');
+        user.emailVerified = true;
+        emailVerificationTokens.delete(token);
+        await writeDatabase(database);
+        return sendJson(response, 200, { user: publicUser(user), message: 'Email verified successfully.' });
+    }
+
+    if (method === 'POST' && route === '/api/auth/send-verification') {
+        const session = getAuthenticatedUserSession(request);
+        if (!session) return sendError(response, 401, 'Authentication required.');
+        const user = database.users.find((item) => item.id === session.userId);
+        if (!user) return sendError(response, 404, 'Account not found.');
+        const token = crypto.randomBytes(20).toString('hex');
+        emailVerificationTokens.set(token, { userId: user.id, expiresAt: Date.now() + 24 * 60 * 60 * 1000 });
+        return sendJson(response, 200, { message: 'Verification email generated.' });
     }
 
     if (method === 'POST' && route === '/api/admin/login') {
@@ -581,22 +1275,51 @@ async function handleApi(request, response, requestUrl) {
         clearLoginFailures(rateKey);
         const token = crypto.randomBytes(32).toString('hex');
         adminSessions.set(token, { adminId: admin.id, createdAt: Date.now() });
+        setSessionCookie(response, 'medicare_admin_session', token, 60 * 60 * 8);
         return sendJson(response, 200, { user: publicAdmin(admin), token });
+    }
+
+    if (method === 'GET' && route === '/api/auth/validate') {
+        const session = getAuthenticatedUserSession(request);
+        if (!session) return sendError(response, 401, 'Authentication required.');
+        const user = database.users.find((item) => item.id === session.userId);
+        if (!user) return sendError(response, 404, 'Account not found.');
+        return sendJson(response, 200, { authenticated: true, user: publicUser(user) });
     }
 
     if (method === 'GET' && route === '/api/appointments') {
         const email = sanitizeEmail(requestUrl.searchParams.get('email'));
-        return sendJson(response, 200, { appointments: database.appointments.filter((item) => !email || item.patient === email) });
+        const isAdmin = isAdminRequest(request);
+        const session = getAuthenticatedUserSession(request);
+        const isCurrentPatient = email ? isPatientRequest(request, email) : session?.role === 'patient';
+        if (!isAdmin && !session) {
+            return sendError(response, 401, 'Authentication required to view appointments.');
+        }
+        if (email && !isAdmin && !isCurrentPatient) {
+            return sendError(response, 403, 'Patient session required to view this appointment list.');
+        }
+        if (!isAdmin && session.role === 'doctor') {
+            const doctorContext = getAuthorizedDoctorContext(request, database);
+            if (!doctorContext) return sendError(response, 403, 'Doctor authorization is required.');
+            return sendJson(response, 200, { appointments: database.appointments.filter(doctorContext.ownsAppointment) });
+        }
+        return sendJson(response, 200, { appointments: database.appointments.filter((item) => isAdmin ? (!email || item.patient === email) : item.patient === session.email) });
     }
 
     if (method === 'POST' && route === '/api/appointments') {
+        const existingSession = getRequestSession(request).patient;
+        const requestedPatient = sanitizeEmail(body.patient);
+        const isAdmin = isAdminRequest(request);
+        if (!isAdmin && (!existingSession || existingSession.email !== requestedPatient)) {
+            return sendError(response, 403, 'Patient session required to book an appointment for this account.');
+        }
         const appointment = {
             id: crypto.randomUUID(),
             doctor: String(body.doctor || '').trim(),
             date: String(body.date || '').trim(),
             time: String(body.time || '').trim(),
             reason: String(body.reason || '').trim(),
-            patient: sanitizeEmail(body.patient),
+            patient: requestedPatient,
             status: 'Pending',
             createdAt: new Date().toISOString()
         };
@@ -610,7 +1333,12 @@ async function handleApi(request, response, requestUrl) {
             return sendError(response, 400, 'Complete all appointment fields.');
         }
 
+        const hasConflict = database.appointments.some((item) => item.date === appointment.date && item.time === appointment.time && item.doctor === appointment.doctor && ['Pending', 'Confirmed'].includes(item.status));
+        const patientConflict = database.appointments.some((item) => item.date === appointment.date && item.time === appointment.time && item.patient === appointment.patient && ['Pending', 'Confirmed'].includes(item.status));
+        if (hasConflict || patientConflict) return sendError(response, 409, 'That appointment time is no longer available. Choose another time.');
+
         database.appointments.push(appointment);
+        addNotification(database, appointment.patient, 'Appointment request received', `${appointment.doctor} on ${appointment.date} at ${appointment.time}.`, 'appointment');
         await writeDatabase(database);
         return sendJson(response, 201, { appointment });
     }
@@ -629,6 +1357,7 @@ async function handleApi(request, response, requestUrl) {
 
         appointment.status = status;
         appointment.updatedAt = new Date().toISOString();
+        if (appointment.patient) addNotification(database, appointment.patient, `Appointment ${status.toLowerCase()}`, `${appointment.doctor} on ${appointment.date} at ${appointment.time}.`, status.toLowerCase());
         await writeDatabase(database);
         return sendJson(response, 200, { appointment });
     }
@@ -775,10 +1504,73 @@ async function handleApi(request, response, requestUrl) {
     sendError(response, 404, 'API route not found.');
 }
 
+function resolvePublicFilePath(requestedPath) {
+    const normalizedPath = requestedPath === '/' ? '/index.html' : requestedPath;
+    const withoutTrailingSlash = normalizedPath.endsWith('/') ? normalizedPath.slice(0, -1) : normalizedPath;
+
+    if (path.extname(withoutTrailingSlash)) {
+        return withoutTrailingSlash;
+    }
+
+    const aliasCandidates = [
+        `${withoutTrailingSlash}.html`,
+        `${withoutTrailingSlash}/index.html`,
+        `${withoutTrailingSlash}/.html`
+    ];
+
+    for (const candidate of aliasCandidates) {
+        const resolvedPath = path.resolve(PUBLIC_DIR, `.${candidate}`);
+        if (resolvedPath.startsWith(PUBLIC_DIR) && fs.existsSync(resolvedPath) && !fs.statSync(resolvedPath).isDirectory()) {
+            return candidate;
+        }
+    }
+
+    if (/^\/doctors\//.test(withoutTrailingSlash)) {
+        const detailPage = '/doctors-detail.html';
+        const resolvedPath = path.resolve(PUBLIC_DIR, `.${detailPage}`);
+        if (fs.existsSync(resolvedPath) && !fs.statSync(resolvedPath).isDirectory()) {
+            return detailPage;
+        }
+    }
+
+    if (/^\/services\//.test(withoutTrailingSlash)) {
+        const detailPage = '/services-detail.html';
+        const resolvedPath = path.resolve(PUBLIC_DIR, `.${detailPage}`);
+        if (fs.existsSync(resolvedPath) && !fs.statSync(resolvedPath).isDirectory()) {
+            return detailPage;
+        }
+    }
+
+    if (/^\/patient(?:\/|$)/.test(withoutTrailingSlash)) {
+        const patientDashboardPage = '/patient-dashboard.html';
+        const resolvedPath = path.resolve(PUBLIC_DIR, `.${patientDashboardPage}`);
+        if (fs.existsSync(resolvedPath) && !fs.statSync(resolvedPath).isDirectory()) {
+            return patientDashboardPage;
+        }
+    }
+
+    if (/^\/doctor(?:\/|$)/.test(withoutTrailingSlash)) {
+        const doctorDashboardPage = '/doctor-dashboard.html';
+        const resolvedPath = path.resolve(PUBLIC_DIR, `.${doctorDashboardPage}`);
+        if (fs.existsSync(resolvedPath) && !fs.statSync(resolvedPath).isDirectory()) {
+            return doctorDashboardPage;
+        }
+    }
+
+    return withoutTrailingSlash;
+}
+
 function serveStatic(request, response, requestUrl) {
-    const requestedPath = requestUrl.pathname === '/' ? '/index.html' : requestUrl.pathname;
-    const filePath = path.resolve(PUBLIC_DIR, `.${requestedPath}`);
+    const requestedPath = requestUrl.pathname;
+    const publicFilePath = resolvePublicFilePath(requestedPath);
+    const filePath = path.resolve(PUBLIC_DIR, `.${publicFilePath}`);
+
     if (!filePath.startsWith(PUBLIC_DIR) || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
+        const fallback404 = path.resolve(PUBLIC_DIR, '404.html');
+        if (fs.existsSync(fallback404) && !fs.statSync(fallback404).isDirectory()) {
+            response.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+            return fs.createReadStream(fallback404).pipe(response);
+        }
         return sendError(response, 404, 'Page not found.');
     }
 
@@ -793,13 +1585,20 @@ const server = http.createServer(async (request, response) => {
     response.setHeader('X-Frame-Options', 'DENY');
     response.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     response.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    response.setHeader('Cache-Control', requestUrl.pathname.startsWith('/api/') ? 'no-store' : 'no-cache');
+    response.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'");
 
     if (request.method === 'OPTIONS') {
         response.writeHead(204, {
             'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Access-Control-Allow-Origin': `http://${request.headers.host || 'localhost'}`
         });
         return response.end();
+    }
+
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method) && !isSameOriginRequest(request)) {
+        return sendError(response, 403, 'Cross-origin state changes are not allowed.');
     }
 
     try {
