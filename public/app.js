@@ -9,14 +9,6 @@ if (!document.querySelector('link[rel="manifest"]')) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const siteLoader = document.querySelector('#siteLoader');
-    if (siteLoader) {
-        window.setTimeout(() => {
-            siteLoader.classList.add('is-finished');
-            window.setTimeout(() => siteLoader.remove(), 450);
-        }, 2000);
-    }
-
     let session = null;
     try {
         session = JSON.parse(localStorage.getItem('medicareCurrentUser') || 'null');
