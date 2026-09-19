@@ -3,7 +3,7 @@ const { spawn } = require('node:child_process');
 
 const serverProc = spawn(process.execPath, ['server.js'], {
   cwd: __dirname + '/..',
-  env: { ...process.env, PORT: '9098' },
+  env: { ...process.env, PORT: '9098', ADMIN_EMAIL: 'admin@tests.invalid', ADMIN_PASSWORD: 'TestAdmin123!' },
   stdio: ['ignore', 'pipe', 'pipe']
 });
 
@@ -33,12 +33,14 @@ async function request(path, options = {}) {
     const patientEmail = `doctor.portal.patient.${suffix}@example.com`;
     const doctorEmail = `doctor.portal.assigned.${suffix}@example.com`;
     const otherDoctorEmail = `doctor.portal.other.${suffix}@example.com`;
-    const appointmentDate = `2099-01-${String((suffix % 20) + 10).padStart(2, '0')}`;
+    const appointmentDate = `2099-12-${String((suffix % 20) + 10).padStart(2, '0')}`;
     const appointmentTime = `${String((suffix % 8) + 9).padStart(2, '0')}:${String((suffix % 6) * 10).padStart(2, '0')}`;
-    const register = (name, email, role) => request('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, phone: '9876543210', age: 38, password, role }) });
-    await register('Doctor Portal Patient', patientEmail, 'patient');
-    await register('Dr. Asha Mehta', doctorEmail, 'doctor');
-    await register('Dr. Rohan Kapoor', otherDoctorEmail, 'doctor');
+    const registerPatient = (name, email) => request('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, phone: '9876543210', age: 38, password, role: 'patient' }) });
+    await registerPatient('Doctor Portal Patient', patientEmail);
+    const adminLogin = await request('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'admin@tests.invalid', password: 'TestAdmin123!' }) });
+    const provision = (name, email) => request('/api/admin/users', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminLogin.body.token}` }, body: JSON.stringify({ name, email, phone: '9876543210', age: 38, password, role: 'doctor' }) });
+    await provision('Dr. Asha Mehta', doctorEmail);
+    await provision('Dr. Rohan Kapoor', otherDoctorEmail);
 
     const patientLogin = await request('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: patientEmail, password }) });
     const patientCookie = patientLogin.cookie;

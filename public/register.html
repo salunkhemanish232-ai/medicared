@@ -51,6 +51,31 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="dateOfBirth"><i class="fa-solid fa-calendar"></i> Date of Birth</label>
+                    <input type="date" id="dateOfBirth" name="dateOfBirth">
+                </div>
+
+                <div class="form-group">
+                    <label for="gender"><i class="fa-solid fa-person"></i> Gender</label>
+                    <select id="gender" name="gender">
+                        <option value="">Prefer not to say</option>
+                        <option value="female">Female</option>
+                        <option value="male">Male</option>
+                        <option value="non-binary">Non-binary</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="address"><i class="fa-solid fa-location-dot"></i> Address</label>
+                    <textarea id="address" name="address" rows="2" placeholder="Optional address"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="emergencyContact"><i class="fa-solid fa-kit-medical"></i> Emergency Contact</label>
+                    <input type="text" id="emergencyContact" name="emergencyContact" placeholder="Name and phone, optional">
+                </div>
+
+                <div class="form-group">
                     <label for="password"><i class="fa-solid fa-lock"></i> Password</label>
                     <div class="password-field">
                         <input type="password" id="password" name="password" placeholder="At least 6 characters" minlength="6" autocomplete="new-password" required>

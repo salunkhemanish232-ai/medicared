@@ -33,6 +33,10 @@ async function waitForServer() {
         email,
         phone: '9876543210',
         age: 29,
+        dateOfBirth: '1997-04-12',
+        gender: 'female',
+        address: 'Demo address',
+        emergencyContact: 'Demo contact 9876543210',
         password: 'StrongPass123!',
         role: 'patient'
       })
@@ -42,6 +46,8 @@ async function waitForServer() {
     console.log('register status:', registerResponse.status, registerBody);
     assert.equal(registerResponse.status, 201, 'User registration should succeed');
     assert.equal(registerBody.user.email, email);
+    assert.equal(registerBody.user.gender, 'female');
+    assert.equal(registerBody.user.emergencyContact, 'Demo contact 9876543210');
 
     const loginResponse = await fetch('http://localhost:9099/api/auth/login', {
       method: 'POST',
@@ -74,6 +80,28 @@ async function waitForServer() {
     console.log('profile status:', profileResponse.status, profileBody);
     assert.equal(profileResponse.status, 200, 'Profile retrieval should work for a logged-in user');
     assert.equal(profileBody.user.email, email);
+
+    const labTestsResponse = await fetch('http://localhost:9099/api/lab-tests');
+    const labTestsBody = await labTestsResponse.json();
+    assert.equal(labTestsResponse.status, 200, 'Lab catalog should be available');
+    assert.ok(labTestsBody.tests.length > 0, 'Lab catalog should contain tests');
+
+    const labOrderResponse = await fetch('http://localhost:9099/api/patient/lab-orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: setCookieHeader.split(';')[0] },
+      body: JSON.stringify({ testId: labTestsBody.tests[0].id, date: '2099-12-15' })
+    });
+    const labOrderBody = await labOrderResponse.json();
+    assert.equal(labOrderResponse.status, 201, 'Patient lab order should succeed');
+    assert.equal(labOrderBody.report.patientEmail, email);
+
+    const reportsResponse = await fetch('http://localhost:9099/api/patient/lab-reports', { headers: { Cookie: setCookieHeader.split(';')[0] } });
+    const reportsBody = await reportsResponse.json();
+    assert.equal(reportsResponse.status, 200, 'Patient lab reports should be private and available');
+    assert.equal(reportsBody.reports.some((report) => report.id === labOrderBody.report.id), true);
+
+    const integrationsResponse = await fetch('http://localhost:9099/api/integrations/status');
+    assert.equal(integrationsResponse.status, 200, 'Integration status should be public and non-secret');
 
     console.log('AUTH SMOKE TEST: PASS');
   } catch (error) {

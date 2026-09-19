@@ -28,12 +28,9 @@ npm start
 
 Open `http://localhost:8080`.
 
-The default admin account is:
+Admin access is provisioned from the `ADMIN_EMAIL` and `ADMIN_PASSWORD` environment variables. These credentials are never displayed in the public UI or committed to the repository.
 
-- Email: `admin@medicare.com`
-- Password: `admin123`
-
-Change this password before publishing publicly.
+Online payments and external AI are provider-gated. The application reports their configuration status and refuses to claim a completed payment or AI action until an adapter and provider credentials are configured.
 
 ## Use on a phone
 
@@ -53,6 +50,8 @@ $env:DB_PORT="3306"
 $env:DB_USER="root"
 $env:DB_PASSWORD="your-mysql-password"
 $env:DB_NAME="medicare_db"
+$env:ADMIN_EMAIL="admin@example.com"
+$env:ADMIN_PASSWORD="use-a-long-random-password"
 npm start
 ```
 

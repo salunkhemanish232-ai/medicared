@@ -20,6 +20,8 @@ const DB_CONFIG = {
     connectionLimit: 10,
     charset: 'utf8mb4'
 };
+const ADMIN_EMAIL = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+const ADMIN_PASSWORD = String(process.env.ADMIN_PASSWORD || '');
 const MIME_TYPES = {
     '.css': 'text/css; charset=utf-8',
     '.html': 'text/html; charset=utf-8',
@@ -88,6 +90,12 @@ const STORE_PRODUCTS = [
     { id: 'M006', name: 'Electrolyte care pack', category: 'Wellness', price: 'Rs 99', icon: 'fa-glass-water', description: 'Hydration support. Ask your clinician when needed.' }
 ];
 
+const DEFAULT_LAB_TESTS = [
+    { id: 'LT001', name: 'Complete blood count', department: 'Pathology', preparation: 'Follow the care team instructions before collection.', fee: 'Rs 450' },
+    { id: 'LT002', name: 'Fasting blood glucose', department: 'Pathology', preparation: 'Fasting requirements will be confirmed when scheduled.', fee: 'Rs 250' },
+    { id: 'LT003', name: 'Chest imaging review', department: 'Radiology', preparation: 'Bring previous reports and referral details if available.', fee: 'Rs 900' }
+];
+
 const VERIFIED_FAQS = [
     { question: 'How do I book an appointment?', answer: 'Choose a doctor, select an available date and time, then submit your reason for visit. Your request appears in your portal after submission.' },
     { question: 'How do I reschedule or cancel?', answer: 'Open Appointments from your patient portal and use the available action on the appointment. The care team is notified of the change.' },
@@ -95,7 +103,7 @@ const VERIFIED_FAQS = [
     { question: 'Can the assistant diagnose me?', answer: 'No. Medicare navigation provides verified service information and appointment guidance only. Speak with a qualified clinician for medical advice.' }
 ];
 
-const VALID_STATUS = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
+const VALID_STATUS = ['Pending', 'Confirmed', 'Completed', 'Cancelled', 'Rejected', 'No-show'];
 const VALID_ROLES = ['patient', 'doctor', 'admin', 'staff'];
 let mysqlPool = null;
 let storageMode = 'json';
@@ -116,6 +124,7 @@ function getDefaultDatabase() {
         patients: [],
         messages: [],
         doctors: DEFAULT_DOCTORS,
+        labTests: DEFAULT_LAB_TESTS,
         medicalRecords: [],
         labReports: [],
         prescriptions: [],
@@ -142,6 +151,7 @@ function readLegacyDatabase() {
         if (Array.isArray(parsed.patients)) database.patients = parsed.patients;
         if (Array.isArray(parsed.messages)) database.messages = parsed.messages;
         if (Array.isArray(parsed.doctors)) database.doctors = parsed.doctors;
+        if (Array.isArray(parsed.labTests)) database.labTests = parsed.labTests;
         if (Array.isArray(parsed.medicalRecords)) database.medicalRecords = parsed.medicalRecords;
         if (Array.isArray(parsed.labReports)) database.labReports = parsed.labReports;
         if (Array.isArray(parsed.prescriptions)) database.prescriptions = parsed.prescriptions;
@@ -201,13 +211,13 @@ async function ensureDatabase() {
         if (missingDoctors.length) {
             database.doctors = [...(database.doctors || []), ...missingDoctors.map((doctor) => ({ ...doctor }))];
         }
-        if (!database.admins.some((admin) => admin.email === 'admin@medicare.com')) {
+        if (ADMIN_EMAIL && ADMIN_PASSWORD && !database.admins.some((admin) => admin.email === ADMIN_EMAIL)) {
             database.admins.push({
                 id: crypto.randomUUID(),
                 name: 'System Administrator',
-                email: 'admin@medicare.com',
+                email: ADMIN_EMAIL,
                 role: 'admin',
-                password: hashPassword('admin123'),
+                password: hashPassword(ADMIN_PASSWORD),
                 createdAt: new Date().toISOString()
             });
         }
@@ -222,6 +232,10 @@ async function ensureDatabase() {
             email VARCHAR(255) NOT NULL UNIQUE,
             phone VARCHAR(255) NOT NULL,
             age INT NOT NULL,
+            dateOfBirth DATE NULL,
+            gender VARCHAR(50) NULL,
+            address TEXT NULL,
+            emergencyContact VARCHAR(255) NULL,
             password TEXT NOT NULL,
             createdAt DATETIME NOT NULL,
             lastLoginAt DATETIME NULL
@@ -229,6 +243,10 @@ async function ensureDatabase() {
     `);
 
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS lastLoginAt DATETIME NULL');
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS dateOfBirth DATE NULL');
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS gender VARCHAR(50) NULL');
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT NULL');
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS emergencyContact VARCHAR(255) NULL');
 
     await pool.query(`
         CREATE TABLE IF NOT EXISTS admins (
@@ -269,10 +287,14 @@ async function ensureDatabase() {
             id VARCHAR(255) PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
             email VARCHAR(255) NOT NULL,
+            phone VARCHAR(50) NULL,
+            subject VARCHAR(255) NOT NULL DEFAULT '',
             message TEXT NOT NULL,
             createdAt DATETIME NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
+    await pool.query('ALTER TABLE messages ADD COLUMN IF NOT EXISTS phone VARCHAR(50) NULL');
+    await pool.query("ALTER TABLE messages ADD COLUMN IF NOT EXISTS subject VARCHAR(255) NOT NULL DEFAULT ''");
 
     await pool.query(`
         CREATE TABLE IF NOT EXISTS doctors (
@@ -310,6 +332,20 @@ async function ensureDatabase() {
             createdAt DATETIME NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS lab_tests (
+            id VARCHAR(255) PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            department VARCHAR(255) NOT NULL,
+            preparation TEXT NOT NULL,
+            fee VARCHAR(255) NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+    const [labTestRows] = await pool.query('SELECT * FROM lab_tests');
+    if (!labTestRows.length) {
+        for (const test of DEFAULT_LAB_TESTS) await pool.query('INSERT INTO lab_tests (id, name, department, preparation, fee) VALUES (?, ?, ?, ?, ?)', [test.id, test.name, test.department, test.preparation, test.fee]);
+    }
 
     await pool.query(`
         CREATE TABLE IF NOT EXISTS prescriptions (
@@ -355,9 +391,9 @@ async function ensureDatabase() {
         await pool.query('INSERT INTO doctors (id, name, department, specialty, fee, availability, photo) VALUES (?, ?, ?, ?, ?, ?, ?)', [doctor.id, doctor.name, doctor.department, doctor.specialty, doctor.fee, doctor.availability, doctor.photo]);
     }
 
-    const [adminRows] = await pool.query('SELECT * FROM admins WHERE email = ?', ['admin@medicare.com']);
-    if (!adminRows.length) {
-        await pool.query('INSERT INTO admins (id, name, email, role, password, createdAt) VALUES (?, ?, ?, ?, ?, ?)', [crypto.randomUUID(), 'System Administrator', 'admin@medicare.com', 'admin', hashPassword('admin123'), new Date().toISOString()]);
+    const [adminRows] = ADMIN_EMAIL ? await pool.query('SELECT * FROM admins WHERE email = ?', [ADMIN_EMAIL]) : [[]];
+    if (ADMIN_EMAIL && ADMIN_PASSWORD && !adminRows.length) {
+        await pool.query('INSERT INTO admins (id, name, email, role, password, createdAt) VALUES (?, ?, ?, ?, ?, ?)', [crypto.randomUUID(), 'System Administrator', ADMIN_EMAIL, 'admin', hashPassword(ADMIN_PASSWORD), new Date().toISOString()]);
     }
 
     const [users] = await pool.query('SELECT * FROM users ORDER BY createdAt ASC');
@@ -368,11 +404,12 @@ async function ensureDatabase() {
     const [doctors] = await pool.query('SELECT * FROM doctors ORDER BY id ASC');
     const [medicalRecords] = await pool.query('SELECT * FROM medical_records ORDER BY createdAt ASC');
     const [labReports] = await pool.query('SELECT * FROM lab_reports ORDER BY createdAt ASC');
+    const [labTests] = await pool.query('SELECT * FROM lab_tests ORDER BY id ASC');
     const [prescriptions] = await pool.query('SELECT * FROM prescriptions ORDER BY createdAt ASC');
     const [notifications] = await pool.query('SELECT * FROM notifications ORDER BY createdAt ASC');
     const [auditLogs] = await pool.query('SELECT * FROM audit_logs ORDER BY createdAt ASC');
 
-    return { users, admins, appointments, patients, messages, doctors, medicalRecords, labReports, prescriptions, notifications, auditLogs };
+    return { users, admins, appointments, patients, messages, doctors, labTests, medicalRecords, labReports, prescriptions, notifications, auditLogs };
 }
 
 async function readDatabase() {
@@ -398,12 +435,13 @@ async function writeDatabase(database) {
     await pool.query('DELETE FROM doctors');
     await pool.query('DELETE FROM medical_records');
     await pool.query('DELETE FROM lab_reports');
+    await pool.query('DELETE FROM lab_tests');
     await pool.query('DELETE FROM prescriptions');
     await pool.query('DELETE FROM notifications');
     await pool.query('DELETE FROM audit_logs');
 
     for (const user of database.users || []) {
-        await pool.query('INSERT INTO users (id, name, email, phone, age, password, createdAt, lastLoginAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [user.id, user.name, user.email, user.phone, Number(user.age), user.password, user.createdAt, user.lastLoginAt || null]);
+        await pool.query('INSERT INTO users (id, name, email, phone, age, dateOfBirth, gender, address, emergencyContact, password, createdAt, lastLoginAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [user.id, user.name, user.email, user.phone, Number(user.age), user.dateOfBirth || null, user.gender || null, user.address || null, user.emergencyContact || null, user.password, user.createdAt, user.lastLoginAt || null]);
     }
 
     for (const admin of database.admins || []) {
@@ -419,7 +457,7 @@ async function writeDatabase(database) {
     }
 
     for (const message of database.messages || []) {
-        await pool.query('INSERT INTO messages (id, name, email, message, createdAt) VALUES (?, ?, ?, ?, ?)', [message.id, message.name, message.email, message.message, message.createdAt]);
+        await pool.query('INSERT INTO messages (id, name, email, phone, subject, message, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)', [message.id, message.name, message.email, message.phone || null, message.subject || '', message.message, message.createdAt]);
     }
 
     for (const doctor of database.doctors || []) {
@@ -432,6 +470,10 @@ async function writeDatabase(database) {
 
     for (const report of database.labReports || []) {
         await pool.query('INSERT INTO lab_reports (id, patientEmail, testName, status, date, fileName, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)', [report.id, report.patientEmail, report.testName, report.status, report.date, report.fileName, report.createdAt]);
+    }
+
+    for (const test of database.labTests || []) {
+        await pool.query('INSERT INTO lab_tests (id, name, department, preparation, fee) VALUES (?, ?, ?, ?, ?)', [test.id, test.name, test.department, test.preparation, test.fee]);
     }
 
     for (const prescription of database.prescriptions || []) {
@@ -490,6 +532,10 @@ function publicUser(user) {
         email: user.email,
         phone: user.phone,
         age: user.age,
+        dateOfBirth: user.dateOfBirth || null,
+        gender: user.gender || null,
+        address: user.address || null,
+        emergencyContact: user.emergencyContact || null,
         role: user.role || 'patient',
         emailVerified: Boolean(user.emailVerified),
         createdAt: user.createdAt || null,
@@ -709,7 +755,11 @@ function getDoctorPatientEmails(database, doctorContext) {
 }
 
 function requiresAdmin(route, method) {
-    return (method === 'GET' && ['/api/admin/summary', '/api/users', '/api/messages', '/api/patients'].includes(route))
+    return (method === 'GET' && ['/api/admin/summary', '/api/dashboard/summary', '/api/users', '/api/messages', '/api/patients'].includes(route))
+        || (method === 'POST' && route === '/api/admin/users')
+        || (method === 'POST' && route === '/api/admin/lab-reports')
+        || (method === 'GET' && route === '/api/admin/lab-reports')
+        || (method === 'PUT' && route.startsWith('/api/admin/lab-reports/'))
         || (route.startsWith('/api/patients/') && ['PUT', 'DELETE'].includes(method))
         || (route.startsWith('/api/doctors/') && ['PUT', 'DELETE'].includes(method))
         || (method === 'POST' && ['/api/patients', '/api/doctors'].includes(route))
@@ -739,6 +789,22 @@ async function handleApi(request, response, requestUrl) {
         return sendJson(response, 200, { status: 'ok', service: 'Medicare API', storage: storageMode, persistentDataDirectory: DATABASE_DIR, timestamp: new Date().toISOString() });
     }
 
+    if (method === 'GET' && route === '/api/integrations/status') {
+        return sendJson(response, 200, {
+            ai: Boolean(process.env.AI_API_KEY),
+            payments: Boolean(process.env.PAYMENT_PROVIDER && process.env.PAYMENT_SECRET_KEY),
+            email: Boolean(process.env.EMAIL_API_KEY),
+            disclaimer: 'Unavailable integrations are never represented as completed actions.'
+        });
+    }
+
+    if (method === 'POST' && route === '/api/payments/checkout') {
+        const session = getAuthenticatedRoleSession(request, 'patient');
+        if (!session) return sendError(response, 401, 'Patient authentication is required.');
+        if (!process.env.PAYMENT_PROVIDER || !process.env.PAYMENT_SECRET_KEY) return sendError(response, 503, 'Online payments are not configured for this deployment.');
+        return sendError(response, 501, 'The configured payment provider adapter is not enabled.');
+    }
+
     if (method === 'GET' && route === '/api/doctors') {
         const search = String(requestUrl.searchParams.get('search') || '').trim().toLowerCase();
         const specialty = String(requestUrl.searchParams.get('specialty') || '').trim().toLowerCase();
@@ -747,6 +813,38 @@ async function handleApi(request, response, requestUrl) {
             return (!search || searchable.includes(search)) && (!specialty || doctor.specialty.toLowerCase().includes(specialty) || doctor.department.toLowerCase().includes(specialty));
         });
         return sendJson(response, 200, { doctors });
+    }
+
+    if (method === 'GET' && route === '/api/lab-tests') {
+        return sendJson(response, 200, { tests: database.labTests || DEFAULT_LAB_TESTS });
+    }
+
+    if (method === 'GET' && route === '/api/admin/lab-reports') {
+        return sendJson(response, 200, { reports: database.labReports || [] });
+    }
+
+    if (method === 'GET' && route === '/api/patient/lab-reports') {
+        const session = getAuthenticatedRoleSession(request, 'patient');
+        if (!session) return sendError(response, 401, 'Patient authentication is required.');
+        return sendJson(response, 200, { reports: (database.labReports || []).filter((report) => report.patientEmail === session.email) });
+    }
+
+    if (method === 'POST' && route === '/api/patient/lab-orders') {
+        const session = getAuthenticatedRoleSession(request, 'patient');
+        if (!session) return sendError(response, 401, 'Patient authentication is required.');
+        const testId = String(body.testId || '').trim();
+        const date = String(body.date || '').trim();
+        const test = (database.labTests || DEFAULT_LAB_TESTS).find((item) => item.id === testId);
+        const requestedDate = new Date(`${date}T00:00:00`);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (!test || Number.isNaN(requestedDate.getTime()) || requestedDate < today) return sendError(response, 400, 'Choose a valid diagnostic test and future date.');
+        const report = { id: crypto.randomUUID(), patientEmail: session.email, testName: test.name, testId: test.id, department: test.department, status: 'Requested', date, fileName: '', createdAt: new Date().toISOString() };
+        database.labReports.push(report);
+        addNotification(database, session.email, 'Diagnostic test requested', `${test.name} requested for ${date}.`, 'diagnostics');
+        addAuditLog(database, request, 'lab_test_requested', 'lab_report', report.id, session.email);
+        await writeDatabase(database);
+        return sendJson(response, 201, { report });
     }
 
     if (method === 'GET' && route === '/api/availability') {
@@ -1037,8 +1135,16 @@ async function handleApi(request, response, requestUrl) {
         if (!user) return sendError(response, 404, 'Patient account not found.');
         const appointment = database.appointments.find((item) => item.id === patientRescheduleMatch[1] && item.patient === user.email);
         if (!appointment) return sendError(response, 404, 'Appointment not found.');
-        appointment.date = String(body.date || appointment.date).trim();
-        appointment.time = String(body.time || appointment.time).trim();
+        const nextDate = String(body.date || appointment.date).trim();
+        const nextTime = String(body.time || appointment.time).trim();
+        const requestedDate = new Date(`${nextDate}T00:00:00`);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (Number.isNaN(requestedDate.getTime()) || requestedDate < today || !/^([01]\d|2[0-3]):[0-5]\d$/.test(nextTime)) return sendError(response, 400, 'Choose a valid future date and time.');
+        const hasConflict = database.appointments.some((item) => item.id !== appointment.id && item.doctor === appointment.doctor && item.date === nextDate && item.time === nextTime && ['Pending', 'Confirmed'].includes(item.status));
+        if (hasConflict) return sendError(response, 409, 'That appointment time is no longer available.');
+        appointment.date = nextDate;
+        appointment.time = nextTime;
         appointment.updatedAt = new Date().toISOString();
         await writeDatabase(database);
         return sendJson(response, 200, { appointment });
@@ -1069,8 +1175,13 @@ async function handleApi(request, response, requestUrl) {
         const email = sanitizeEmail(body.email);
         const phone = String(body.phone || '').trim();
         const age = Number(body.age);
+        const dateOfBirth = String(body.dateOfBirth || '').trim();
+        const gender = String(body.gender || '').trim();
+        const address = String(body.address || '').trim();
+        const emergencyContact = String(body.emergencyContact || '').trim();
         const password = String(body.password || '');
-        const role = sanitizeRole(body.role);
+        // Public registration creates patient accounts only. Staff roles are provisioned by an administrator.
+        const role = 'patient';
 
         if (!name || !email || !/^\d{10}$/.test(phone) || !Number.isInteger(age) || age < 1 || age > 120 || !isStrongPassword(password)) {
             return sendError(response, 400, 'Enter valid details. Use a strong password with at least 8 characters, one uppercase, one number, and one symbol.');
@@ -1091,6 +1202,10 @@ async function handleApi(request, response, requestUrl) {
             email,
             phone,
             age,
+            dateOfBirth: dateOfBirth || null,
+            gender: gender || null,
+            address: address || null,
+            emergencyContact: emergencyContact || null,
             role,
             password: hashPassword(password),
             emailVerified: false,
@@ -1177,7 +1292,11 @@ async function handleApi(request, response, requestUrl) {
         const nextName = String(body.name || user.name).trim();
         const nextPhone = String(body.phone || user.phone).trim();
         const nextAge = Number(body.age ?? user.age);
-        const nextRole = sanitizeRole(body.role || user.role || 'patient');
+        const nextDateOfBirth = String(body.dateOfBirth ?? user.dateOfBirth ?? '').trim();
+        const nextGender = String(body.gender ?? user.gender ?? '').trim();
+        const nextAddress = String(body.address ?? user.address ?? '').trim();
+        const nextEmergencyContact = String(body.emergencyContact ?? user.emergencyContact ?? '').trim();
+        const nextRole = user.role || 'patient';
 
         if (!nextName || !/^\d{10}$/.test(nextPhone) || !Number.isInteger(nextAge) || nextAge < 1 || nextAge > 120) {
             return sendError(response, 400, 'Complete valid profile information.');
@@ -1186,6 +1305,10 @@ async function handleApi(request, response, requestUrl) {
         user.name = nextName;
         user.phone = nextPhone;
         user.age = nextAge;
+        user.dateOfBirth = nextDateOfBirth || null;
+        user.gender = nextGender || null;
+        user.address = nextAddress || null;
+        user.emergencyContact = nextEmergencyContact || null;
         user.role = nextRole;
 
         if (body.newPassword) {
@@ -1277,6 +1400,54 @@ async function handleApi(request, response, requestUrl) {
         adminSessions.set(token, { adminId: admin.id, createdAt: Date.now() });
         setSessionCookie(response, 'medicare_admin_session', token, 60 * 60 * 8);
         return sendJson(response, 200, { user: publicAdmin(admin), token });
+    }
+
+    if (method === 'POST' && route === '/api/admin/users') {
+        const name = String(body.name || '').trim();
+        const email = sanitizeEmail(body.email);
+        const phone = String(body.phone || '').trim();
+        const age = Number(body.age);
+        const password = String(body.password || '');
+        const role = sanitizeRole(body.role);
+        if (!name || !email || !/^\d{10}$/.test(phone) || !Number.isInteger(age) || age < 18 || age > 120 || !['doctor', 'staff'].includes(role) || !isStrongPassword(password)) {
+            return sendError(response, 400, 'Provide valid staff details and a strong password.');
+        }
+        if (database.users.some((user) => user.email === email)) return sendError(response, 409, 'An account with this email already exists.');
+        const user = { id: crypto.randomUUID(), name, email, phone, age, role, password: hashPassword(password), emailVerified: true, createdAt: new Date().toISOString() };
+        database.users.push(user);
+        addAuditLog(database, request, 'staff_user_created', 'user', user.id, email);
+        await writeDatabase(database);
+        return sendJson(response, 201, { user: publicUser(user) });
+    }
+
+    if (method === 'POST' && route === '/api/admin/lab-reports') {
+        const patientEmail = sanitizeEmail(body.patientEmail);
+        const testName = String(body.testName || '').trim();
+        const status = String(body.status || 'Processing').trim();
+        const date = String(body.date || '').trim();
+        const fileName = String(body.fileName || '').trim();
+        const patient = database.users.find((user) => user.email === patientEmail && user.role === 'patient');
+        if (!patient || !testName || !date || !['Requested', 'Scheduled', 'Sample collected', 'Processing', 'Completed'].includes(status)) return sendError(response, 400, 'Provide valid patient report details.');
+        const report = { id: crypto.randomUUID(), patientEmail, testName, status, date, fileName, createdAt: new Date().toISOString() };
+        database.labReports.push(report);
+        addNotification(database, patientEmail, 'Lab report updated', `${testName} is now ${status}.`, 'diagnostics');
+        addAuditLog(database, request, 'lab_report_created', 'lab_report', report.id, 'admin');
+        await writeDatabase(database);
+        return sendJson(response, 201, { report });
+    }
+
+    const adminLabReportMatch = route.match(/^\/api\/admin\/lab-reports\/([^/]+)\/status$/);
+    if (method === 'PUT' && adminLabReportMatch) {
+        const report = (database.labReports || []).find((item) => item.id === adminLabReportMatch[1]);
+        const status = String(body.status || '').trim();
+        if (!report) return sendError(response, 404, 'Lab report not found.');
+        if (!['Requested', 'Scheduled', 'Sample collected', 'Processing', 'Completed'].includes(status)) return sendError(response, 400, 'Invalid lab report status.');
+        report.status = status;
+        if (body.fileName !== undefined) report.fileName = String(body.fileName || '').trim();
+        addNotification(database, report.patientEmail, 'Lab report updated', `${report.testName} is now ${status}.`, 'diagnostics');
+        addAuditLog(database, request, 'lab_report_status_updated', 'lab_report', report.id, 'admin');
+        await writeDatabase(database);
+        return sendJson(response, 200, { report });
     }
 
     if (method === 'GET' && route === '/api/auth/validate') {
@@ -1475,12 +1646,14 @@ async function handleApi(request, response, requestUrl) {
             id: crypto.randomUUID(),
             name: String(body.name || '').trim(),
             email: sanitizeEmail(body.email),
+            phone: String(body.phone || '').trim(),
+            subject: String(body.subject || '').trim(),
             message: String(body.message || '').trim(),
             createdAt: new Date().toISOString()
         };
 
-        if (!message.name || !message.email || !message.message) {
-            return sendError(response, 400, 'Complete all message fields.');
+        if (!message.name || !message.email || !message.subject || !message.message || message.phone && !/^\+?[0-9 ()-]{7,20}$/.test(message.phone)) {
+            return sendError(response, 400, 'Complete the required contact fields with valid details.');
         }
 
         database.messages.push(message);

@@ -83,6 +83,34 @@
             </article>
         </div>
     </section>
+
+    <section class="website-section" id="patientReportsSection" aria-labelledby="patientReportsTitle">
+        <div class="section-headline">
+            <div>
+                <span class="eyebrow">Private patient area</span>
+                <h2 id="patientReportsTitle">Your diagnostic reports</h2>
+                <p class="subtitle">Reports are shown only after your authenticated patient session is verified.</p>
+            </div>
+        </div>
+        <div class="table-container">
+            <div id="patientReportsContent" class="info-panel"><p class="subtitle">Sign in to view your authorized reports.</p><a class="btn btn-small" href="login.html">Patient login</a></div>
+        </div>
+    </section>
+
+    <section class="website-section" aria-labelledby="labOrderTitle">
+        <div class="form-card-container quick-contact-form">
+            <span class="eyebrow">Authenticated patient workflow</span>
+            <h2 id="labOrderTitle">Request a diagnostic test</h2>
+            <p class="subtitle">Choose a test and preferred date. The lab team will confirm the request before collection.</p>
+            <form id="labOrderForm" class="auth-form">
+                <div class="form-group"><label for="labTestSelect">Test</label><select id="labTestSelect" required><option value="">Loading tests...</option></select></div>
+                <div class="form-group"><label for="labOrderDate">Preferred date</label><input id="labOrderDate" type="date" required></div>
+                <div id="labOrderError" class="form-error" role="alert"></div>
+                <div id="labOrderSuccess" class="success-banner" aria-live="polite"></div>
+                <button type="submit" class="btn-auth" id="labOrderBtn"><i class="fa-solid fa-paper-plane"></i> Request test</button>
+            </form>
+        </div>
+    </section>
 </main>
 
 <footer class="site-footer" role="contentinfo">

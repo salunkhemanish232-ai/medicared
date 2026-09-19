@@ -24,3 +24,7 @@ services:
         sync: false
       - key: DB_NAME
         value: medicare_db
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false

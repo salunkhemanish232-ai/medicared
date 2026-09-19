@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = document.querySelector('#registerBtn');
         setLoading(button, true);
         try {
-            const result = await api('/api/auth/register', { method: 'POST', body: JSON.stringify({ name: form.get('name'), email: form.get('email'), phone: form.get('phone'), age: form.get('age'), password: form.get('password'), role: 'patient' }) });
+            const result = await api('/api/auth/register', { method: 'POST', body: JSON.stringify({ name: form.get('name'), email: form.get('email'), phone: form.get('phone'), age: form.get('age'), dateOfBirth: form.get('dateOfBirth'), gender: form.get('gender'), address: form.get('address'), emergencyContact: form.get('emergencyContact'), password: form.get('password'), role: 'patient' }) });
             localStorage.setItem('medicareCurrentUser', JSON.stringify(result.user));
             showSuccess('#registerSuccess', 'Registration successful. Your account is secure and ready.');
             const completion = document.querySelector('#registrationComplete');
@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = loginForm.querySelector('button[type="submit"]');
         setLoading(button, true);
         try {
-            const result = await api('/api/login', { method: 'POST', body: JSON.stringify({ email: email.value, password: password.value }) });
+            const result = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ email: email.value, password: password.value }) });
             localStorage.setItem('medicareCurrentUser', JSON.stringify(result.user));
             showSuccess('#loginSuccess', 'Login successful. Welcome back. Redirecting to your dashboard...');
             setTimeout(() => { window.location.href = 'dashboard.html'; }, 900);
@@ -379,7 +379,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.querySelector('#profileEmail').value = user.email || '';
                 document.querySelector('#profilePhone').value = user.phone || '';
                 document.querySelector('#profileAge').value = user.age || '';
-                document.querySelector('#profileRole').value = user.role || 'patient';
+                document.querySelector('#profileDateOfBirth').value = user.dateOfBirth || '';
+                document.querySelector('#profileGender').value = user.gender || '';
+                document.querySelector('#profileAddress').value = user.address || '';
+                document.querySelector('#profileEmergencyContact').value = user.emergencyContact || '';
             })
             .catch(() => {
                 window.location.href = 'login.html';
@@ -391,6 +394,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: document.querySelector('#profileName').value,
                 phone: document.querySelector('#profilePhone').value,
                 age: document.querySelector('#profileAge').value,
+                dateOfBirth: document.querySelector('#profileDateOfBirth').value,
+                gender: document.querySelector('#profileGender').value,
+                address: document.querySelector('#profileAddress').value,
+                emergencyContact: document.querySelector('#profileEmergencyContact').value,
                 role: document.querySelector('#profileRole').value,
                 currentPassword: document.querySelector('#profileCurrentPassword').value,
                 newPassword: document.querySelector('#profileNewPassword').value
@@ -410,9 +417,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const contactForm = document.querySelector('#contact-form');
     if (contactForm) contactForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const fields = contactForm.querySelectorAll('input, textarea');
+        const fields = Object.fromEntries(new FormData(contactForm).entries());
         try {
-            await api('/api/messages', { method: 'POST', body: JSON.stringify({ name: fields[0].value, email: fields[1].value, message: fields[2].value }) });
+            await api('/api/messages', { method: 'POST', body: JSON.stringify(fields) });
             contactForm.reset(); const feedback = document.querySelector('#contact-feedback');
             if (feedback) { feedback.textContent = 'Message sent successfully.'; feedback.style.display = 'block'; }
         } catch (error) { showError('#contact-feedback', error.message); }
@@ -476,6 +483,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderPublicDoctors();
 
+    const patientReportsContent = document.querySelector('#patientReportsContent');
+    if (patientReportsContent && session) {
+        api('/api/patient/dashboard').then(({ dashboard }) => {
+            const reports = dashboard.labReports || [];
+            patientReportsContent.innerHTML = reports.length
+                ? reports.map((report) => `<div class="info-row"><strong>${escapeHtml(report.testName)}</strong><span>${escapeHtml(report.date)} · ${escapeHtml(report.status)}</span></div>`).join('')
+                : '<p class="subtitle">No diagnostic reports are available for this account yet.</p>';
+        }).catch((error) => {
+            patientReportsContent.innerHTML = `<p class="form-error" style="display:block;">${escapeHtml(error.message)}</p>`;
+        });
+    }
+
+    const labOrderForm = document.querySelector('#labOrderForm');
+    const labTestSelect = document.querySelector('#labTestSelect');
+    const labOrderDate = document.querySelector('#labOrderDate');
+    if (labOrderDate) labOrderDate.min = new Date().toISOString().split('T')[0];
+    if (labTestSelect) {
+        api('/api/lab-tests').then(({ tests }) => {
+            labTestSelect.innerHTML = '<option value="">Choose a test...</option>';
+            tests.forEach((test) => labTestSelect.add(new Option(`${test.name} · ${test.department} · ${test.fee}`, test.id)));
+        }).catch((error) => { labTestSelect.innerHTML = '<option value="">Unable to load tests</option>'; showError('#labOrderError', error.message); });
+    }
+    if (labOrderForm) labOrderForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!session) return window.location.href = 'login.html';
+        const button = document.querySelector('#labOrderBtn');
+        clearMessage('#labOrderError');
+        clearMessage('#labOrderSuccess');
+        setLoading(button, true);
+        try {
+            const result = await api('/api/patient/lab-orders', { method: 'POST', body: JSON.stringify({ testId: labTestSelect.value, date: labOrderDate.value }) });
+            showSuccess('#labOrderSuccess', `Diagnostic request saved for ${result.report.date}.`);
+            labOrderForm.reset();
+            labOrderDate.min = new Date().toISOString().split('T')[0];
+        } catch (error) {
+            showError('#labOrderError', error.message);
+        } finally {
+            setLoading(button, false);
+        }
+    });
+
     const storeProducts = document.querySelector('#storeProducts');
     if (storeProducts) {
         const categorySelect = document.querySelector('#storeCategory');
@@ -507,6 +555,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (primaryButton) primaryButton.innerHTML = `<i class="fa-solid fa-calendar-plus"></i> ${copy.button}`;
         if (storeLink) storeLink.textContent = copy.store;
     });
+
+    const assistantSearchForm = document.querySelector('#assistantSearchForm');
+    const assistantResults = document.querySelector('#assistantResults');
+    if (assistantSearchForm && assistantResults) assistantSearchForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        assistantResults.innerHTML = '<p class="subtitle">Searching verified guidance...</p>';
+        try {
+            const query = document.querySelector('#assistantQuery').value.trim();
+            const result = await api(`/api/navigation?q=${encodeURIComponent(query)}`);
+            const items = [...result.services.map((item) => `<a class="info-row" href="${escapeHtml(item.link)}"><strong>${escapeHtml(item.name)}</strong><span>Open service</span></a>`), ...result.doctors.slice(0, 5).map((item) => `<a class="info-row" href="doctors.html"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.department)}</span></a>`), ...result.faqs.slice(0, 3).map((item) => `<div class="info-row"><strong>${escapeHtml(item.question)}</strong><span>${escapeHtml(item.answer)}</span></div>`)];
+            assistantResults.innerHTML = items.length ? items.join('') : '<p class="subtitle">No verified navigation result found. Contact the care team for help.</p>';
+        } catch (error) { assistantResults.innerHTML = `<p class="form-error" style="display:block;">${escapeHtml(error.message)}</p>`; }
+    });
+    const assistantProviderStatus = document.querySelector('#assistantProviderStatus');
+    if (assistantProviderStatus) api('/api/integrations/status').then((status) => { assistantProviderStatus.textContent = status.ai ? 'An external provider is configured. Medical safety boundaries still apply.' : 'No external AI provider is configured. Verified navigation search remains available.'; }).catch(() => { assistantProviderStatus.textContent = 'Provider status is unavailable; verified navigation search remains available.'; });
 
     const revealItems = document.querySelectorAll('.home-simple .website-section, .home-simple .simple-stats');
     if (revealItems.length && 'IntersectionObserver' in window) {
@@ -607,12 +670,22 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('#confirmedSlots').textContent = filteredAppointments.filter((item) => item.status === 'Confirmed').length;
 
             if (!filteredAppointments.length) {
-                body.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--muted);">No appointments match this filter.</td></tr>';
+                body.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--muted);">No appointments match this filter.</td></tr>';
                 return;
             }
 
-            body.innerHTML = filteredAppointments.map((item) => `<tr><td>${item.doctor}</td><td>${item.date}</td><td>${item.time}</td><td>${item.reason}</td><td>${item.status}</td><td>${feeMap.get(item.doctor) || 'Rs 0'}</td></tr>`).join('');
-        } catch (error) { body.innerHTML = `<tr><td colspan="6">${error.message}</td></tr>`; }
+            body.innerHTML = filteredAppointments.map((item) => `<tr><td>${escapeHtml(item.doctor)}</td><td>${escapeHtml(item.date)}</td><td>${escapeHtml(item.time)}</td><td>${escapeHtml(item.reason)}</td><td>${escapeHtml(item.status)}</td><td>${escapeHtml(feeMap.get(item.doctor) || 'Rs 0')}</td><td>${['Pending', 'Confirmed'].includes(item.status) ? `<button type="button" class="table-action-btn danger" data-cancel-appointment="${escapeHtml(item.id)}">Cancel</button><button type="button" class="table-action-btn" data-reschedule-appointment="${escapeHtml(item.id)}">Reschedule</button>` : '—'}</td></tr>`).join('');
+            body.querySelectorAll('[data-cancel-appointment]').forEach((button) => button.addEventListener('click', async () => {
+                if (!window.confirm('Cancel this appointment?')) return;
+                try { await api(`/api/patient/appointments/${button.dataset.cancelAppointment}/cancel`, { method: 'POST' }); renderAppointments(); } catch (error) { showToast(error.message, 'error'); }
+            }));
+            body.querySelectorAll('[data-reschedule-appointment]').forEach((button) => button.addEventListener('click', async () => {
+                const date = window.prompt('Enter a new date (YYYY-MM-DD):');
+                const time = window.prompt('Enter a new time (HH:MM):');
+                if (!date || !time) return;
+                try { await api(`/api/patient/appointments/${button.dataset.rescheduleAppointment}/reschedule`, { method: 'PUT', body: JSON.stringify({ date, time }) }); renderAppointments(); } catch (error) { showToast(error.message, 'error'); }
+            }));
+        } catch (error) { body.innerHTML = `<tr><td colspan="7">${escapeHtml(error.message)}</td></tr>`; }
     }
 
     const appointmentSearchInput = document.querySelector('#appointmentSearchInput');
@@ -714,6 +787,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const refreshMessagesBtn = document.querySelector('#refreshMessagesBtn');
     const refreshUsersBtn = document.querySelector('#refreshUsersBtn');
     const adminDoctorsBody = document.querySelector('#adminDoctorsBody');
+    const adminLabReportsBody = document.querySelector('#adminLabReportsBody');
     const doctorModal = document.querySelector('#doctorModal');
     const doctorForm = document.querySelector('#doctorForm');
     const doctorModalTitle = document.querySelector('#doctorModalTitle');
@@ -882,10 +956,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         }));
                     }
                 }
+                if (adminLabReportsBody) {
+                    const { reports } = await api('/api/admin/lab-reports');
+                    adminLabReportsBody.innerHTML = reports.length ? reports.map((report) => `<tr><td>${escapeHtml(report.patientEmail)}</td><td>${escapeHtml(report.testName)}</td><td>${escapeHtml(report.date)}</td><td><select class="admin-status-select" data-lab-report-id="${escapeHtml(report.id)}"><option ${report.status === 'Requested' ? 'selected' : ''}>Requested</option><option ${report.status === 'Scheduled' ? 'selected' : ''}>Scheduled</option><option ${report.status === 'Sample collected' ? 'selected' : ''}>Sample collected</option><option ${report.status === 'Processing' ? 'selected' : ''}>Processing</option><option ${report.status === 'Completed' ? 'selected' : ''}>Completed</option></select></td><td>${escapeHtml(report.fileName || 'Not uploaded')}</td></tr>`).join('') : '<tr><td colspan="5">No lab orders or reports yet.</td></tr>';
+                    adminLabReportsBody.querySelectorAll('[data-lab-report-id]').forEach((select) => select.addEventListener('change', async () => {
+                        try { await api(`/api/admin/lab-reports/${select.dataset.labReportId}/status`, { method: 'PUT', body: JSON.stringify({ status: select.value }) }); showToast('Lab report status updated.'); } catch (error) { showToast(error.message, 'error'); }
+                    }));
+                }
             } catch (error) {
                 if (adminAppointmentsBody) adminAppointmentsBody.innerHTML = `<tr><td colspan="6">${error.message}</td></tr>`;
                 if (adminPatientsBody) adminPatientsBody.innerHTML = `<tr><td colspan="4">${error.message}</td></tr>`;
                 if (adminDoctorsBody) adminDoctorsBody.innerHTML = `<tr><td colspan="7">${error.message}</td></tr>`;
+                if (adminLabReportsBody) adminLabReportsBody.innerHTML = `<tr><td colspan="5">${escapeHtml(error.message)}</td></tr>`;
             }
         }
 

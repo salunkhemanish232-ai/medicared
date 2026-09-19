@@ -15,7 +15,7 @@
                 <i class="fa-solid fa-user-gear auth-icon"></i>
                 <span class="tag tag--primary">My profile</span>
                 <h1>Manage account details.</h1>
-                <p class="subtitle">Update your contact information, account role, and password security.</p>
+                <p class="subtitle">Update your contact information and password security.</p>
             </div>
             <form class="auth-form" id="profileForm" novalidate>
                 <div class="form-group">
@@ -35,12 +35,25 @@
                     <input type="number" id="profileAge" name="age" min="1" max="120" required>
                 </div>
                 <div class="form-group">
-                    <label for="profileRole"><i class="fa-solid fa-user-shield"></i> Role</label>
-                    <select id="profileRole" name="role">
-                        <option value="patient">Patient</option>
-                        <option value="doctor">Doctor</option>
-                        <option value="staff">Staff</option>
+                    <label for="profileDateOfBirth"><i class="fa-solid fa-calendar"></i> Date of Birth</label>
+                    <input type="date" id="profileDateOfBirth" name="dateOfBirth">
+                </div>
+                <div class="form-group">
+                    <label for="profileGender"><i class="fa-solid fa-person"></i> Gender</label>
+                    <select id="profileGender" name="gender">
+                        <option value="">Prefer not to say</option>
+                        <option value="female">Female</option>
+                        <option value="male">Male</option>
+                        <option value="non-binary">Non-binary</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label for="profileAddress"><i class="fa-solid fa-location-dot"></i> Address</label>
+                    <textarea id="profileAddress" name="address" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="profileEmergencyContact"><i class="fa-solid fa-kit-medical"></i> Emergency Contact</label>
+                    <input type="text" id="profileEmergencyContact" name="emergencyContact">
                 </div>
                 <div class="form-group">
                     <label for="profileCurrentPassword"><i class="fa-solid fa-lock"></i> Current Password</label>

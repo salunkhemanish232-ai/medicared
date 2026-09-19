@@ -143,7 +143,6 @@
         margin: 24px 12px;
         padding: 34px 20px;
         border-radius: 20px;
-    }
 }
 
 :root {
@@ -279,7 +278,9 @@
         right: 14px;
         bottom: 14px;
     }
+
 }
+
 
 /* Professional shared finish */
 :root {
@@ -6840,6 +6841,9 @@ footer p {
         align-self: center;
     }
 }
+
+.dashboard-logo,
+.logo {
     margin: 0 !important;
     font-size: 1.9rem !important;
     letter-spacing: -0.04em !important;
@@ -8819,6 +8823,206 @@ textarea {
     resize: vertical;
 }
 
+/* Shared phone layout for authentication and portal surfaces */
+@media (max-width: 640px) {
+    html,
+    body {
+        min-width: 320px;
+        overflow-x: hidden;
+    }
+
+    .auth-body {
+        display: block;
+        min-height: 100svh;
+        padding: 0;
+        background:
+            radial-gradient(circle at 100% 0, rgba(13, 148, 136, .16), transparent 34%),
+            linear-gradient(180deg, #edf8fa 0%, #f8fbfd 100%);
+    }
+
+    .auth-main {
+        min-height: 100svh;
+        padding: 18px 12px;
+    }
+
+    .auth-container {
+        width: 100%;
+        max-width: 460px;
+        padding: 0;
+    }
+
+    .auth-card {
+        width: 100%;
+        padding: 24px 18px !important;
+        border-radius: 22px !important;
+    }
+
+    .auth-header {
+        margin-bottom: 22px;
+    }
+
+    .auth-icon {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 12px;
+        font-size: 24px;
+    }
+
+    .auth-header h1 {
+        font-size: clamp(1.65rem, 7vw, 2.1rem) !important;
+        line-height: 1.12;
+    }
+
+    .auth-header .subtitle {
+        font-size: .9rem;
+        line-height: 1.55;
+    }
+
+    .auth-benefits {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        font-size: .76rem;
+    }
+
+    .auth-step-note {
+        align-items: flex-start;
+        font-size: .78rem;
+        line-height: 1.45;
+    }
+
+    .auth-form input,
+    .auth-form select,
+    .auth-form textarea {
+        min-height: 50px;
+        padding: 13px 14px;
+        font-size: 16px;
+    }
+
+    .password-field input {
+        padding-right: 52px;
+    }
+
+    .password-toggle {
+        width: 42px;
+        height: 42px;
+        right: 5px;
+    }
+
+    .btn-auth,
+    .auth-footer .btn {
+        width: 100%;
+        min-height: 50px;
+    }
+
+    .auth-footer {
+        gap: 14px;
+        margin-top: 24px;
+    }
+
+    .dashboard-container,
+    .container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100svh;
+    }
+
+    .dashboard-sidebar,
+    .sidebar {
+        position: static;
+        width: 100%;
+        min-height: 0;
+        padding: 14px 14px 12px;
+    }
+
+    .dashboard-nav-links,
+    .nav-links {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    .dashboard-nav-links a,
+    .nav-links a {
+        justify-content: center;
+        min-height: 44px;
+        padding: 10px 8px;
+        text-align: center;
+        font-size: .82rem;
+    }
+
+    .dashboard-sidebar-footer,
+    .sidebar-footer {
+        margin-top: 12px;
+        padding-top: 10px;
+    }
+
+    .main-content,
+    .main {
+        width: 100%;
+        min-width: 0;
+        padding: 16px 12px 28px !important;
+    }
+
+    .dashboard-header,
+    .page-header,
+    .header {
+        margin: 0 0 18px !important;
+        padding: 20px 16px !important;
+        border-radius: 18px !important;
+    }
+
+    .dashboard-header h1,
+    .page-header h1 {
+        font-size: clamp(1.7rem, 8vw, 2.35rem);
+        line-height: 1.08;
+    }
+
+    .website-section {
+        width: 100%;
+        padding: 0 0 22px;
+    }
+
+    .table-container {
+        width: 100%;
+        max-width: 100%;
+        padding: 12px 10px 8px;
+        overflow-x: auto;
+    }
+
+    .table-container table,
+    .data-table {
+        min-width: 680px;
+    }
+
+    .table-header-row {
+        align-items: stretch;
+    }
+
+    .activity-actions {
+        flex-wrap: wrap;
+    }
+
+    .stats-container {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .stat-box {
+        min-width: 0;
+        padding: 16px 12px;
+    }
+
+    .stat-box h2 {
+        font-size: 1.45rem;
+    }
+
+    .stat-box p {
+        font-size: .76rem;
+    }
+}
+
 input:hover,
 select:hover,
 textarea:hover {
@@ -10753,5 +10957,33 @@ footer {
     .care-float-actions {
         right: 14px;
         bottom: 14px;
+    }
+
+    .auth-body {
+        display: block !important;
+        min-height: 100svh !important;
+        padding: 0 !important;
+    }
+
+    .auth-main {
+        display: flex !important;
+        width: 100% !important;
+        min-height: 100svh !important;
+        padding: 18px 12px !important;
+    }
+
+    .auth-container,
+    .auth-card {
+        width: 100% !important;
+        max-width: 460px !important;
+    }
+
+    .auth-container {
+        padding: 0 !important;
+        margin: 0 auto !important;
+    }
+
+    .auth-card {
+        padding: 24px 18px !important;
     }
 }
