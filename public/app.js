@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!/^\d{10}$/.test(String(values.phone).trim())) errors.phone = 'Enter exactly 10 digits, for example 9876543210.';
         const age = Number(values.age);
         if (!Number.isInteger(age) || age < 1 || age > 120) errors.age = 'Age must be between 1 and 120.';
-        if (String(values.password).length < 6) errors.password = 'Use at least 6 characters.';
+        if (!/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(String(values.password))) errors.password = 'Use 8+ characters with an uppercase letter, number, and symbol.';
         if (values.password !== values.confirmPassword) errors.confirmPassword = 'Passwords do not match.';
         form.querySelectorAll('small[id$="Error"]').forEach((element) => {
             const key = element.id === 'confirmError' ? 'confirmPassword' : element.id.replace('Error', '');
@@ -277,7 +277,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ email: email.value, password: password.value }) });
             localStorage.setItem('medicareCurrentUser', JSON.stringify(result.user));
             showSuccess('#loginSuccess', 'Login successful. Welcome back. Redirecting to your dashboard...');
-            setTimeout(() => { window.location.href = 'dashboard.html'; }, 900);
+            const destination = result.user?.role === 'doctor' ? 'doctor-dashboard.html' : 'dashboard.html';
+            setTimeout(() => { window.location.href = destination; }, 900);
         } catch (error) {
             showError('#loginError', error.message || 'Login failed. Check your details and try again.');
             setLoading(button, false);
@@ -790,12 +791,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminLabReportsBody = document.querySelector('#adminLabReportsBody');
     const doctorModal = document.querySelector('#doctorModal');
     const doctorForm = document.querySelector('#doctorForm');
+    const staffAccountForm = document.querySelector('#staffAccountForm');
     const doctorModalTitle = document.querySelector('#doctorModalTitle');
     const openDoctorModalBtn = document.querySelector('#openDoctorModalBtn');
     const closeDoctorModalBtn = document.querySelector('#closeDoctorModalBtn');
     let editingDoctorId = null;
 
     if (isAdminDashboard) {
+        if (staffAccountForm) staffAccountForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            clearMessage('#staffAccountError');
+            clearMessage('#staffAccountSuccess');
+            const button = document.querySelector('#staffAccountBtn');
+            const password = document.querySelector('#staffPassword').value;
+            if (!/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(password)) return showError('#staffAccountError', 'Use 8+ characters with an uppercase letter, number, and symbol.');
+            setLoading(button, true);
+            try {
+                const result = await api('/api/admin/users', { method: 'POST', body: JSON.stringify({
+                    name: document.querySelector('#staffName').value.trim(),
+                    email: document.querySelector('#staffEmail').value.trim(),
+                    phone: document.querySelector('#staffPhone').value.trim(),
+                    age: document.querySelector('#staffAge').value,
+                    role: document.querySelector('#staffRole').value,
+                    password
+                }) });
+                staffAccountForm.reset();
+                showSuccess('#staffAccountSuccess', `${result.user.role} login created successfully.`);
+                renderAdminUsers();
+            } catch (error) {
+                showError('#staffAccountError', error.message || 'Unable to create staff login.');
+            } finally {
+                setLoading(button, false);
+            }
+        });
         async function renderAdminUsers() {
             if (!adminUsersBody) return;
             try {

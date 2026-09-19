@@ -1,4 +1,4 @@
-const CACHE_NAME = 'medicare-public-v1';
+const CACHE_NAME = 'medicare-public-v2';
 const PUBLIC_SHELL = [
   '/',
   '/index.html',
