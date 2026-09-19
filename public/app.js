@@ -277,7 +277,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ email: email.value, password: password.value }) });
             localStorage.setItem('medicareCurrentUser', JSON.stringify(result.user));
             showSuccess('#loginSuccess', 'Login successful. Welcome back. Redirecting to your dashboard...');
-            const destination = result.user?.role === 'doctor' ? 'doctor-dashboard.html' : 'dashboard.html';
+            const destination = result.user?.role === 'doctor'
+                ? 'doctor-dashboard.html'
+                : result.user?.role === 'staff'
+                    ? 'staff-dashboard.html'
+                    : 'dashboard.html';
             setTimeout(() => { window.location.href = destination; }, 900);
         } catch (error) {
             showError('#loginError', error.message || 'Login failed. Check your details and try again.');
