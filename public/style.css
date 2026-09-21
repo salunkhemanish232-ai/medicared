@@ -11015,3 +11015,156 @@ footer {
         margin: 0;
     }
 }
+
+/* Shared visual refresh: calm clinical surfaces with a warm human accent. */
+:root {
+    --refresh-ink: #102a43;
+    --refresh-teal: #087f83;
+    --refresh-teal-dark: #075e68;
+    --refresh-coral: #e8754d;
+    --refresh-mist: #eef8f6;
+    --refresh-paper: #fffdf9;
+    --refresh-line: rgba(16, 42, 67, 0.12);
+}
+
+body {
+    color: var(--refresh-ink);
+    background: var(--refresh-paper);
+}
+
+h1, h2, h3, .logo, .dashboard-logo-area {
+    font-family: Georgia, 'Times New Roman', serif;
+    letter-spacing: 0;
+}
+
+.navbar {
+    border-bottom: 1px solid var(--refresh-line);
+    background: rgba(255, 253, 249, 0.92);
+    box-shadow: 0 8px 24px rgba(16, 42, 67, 0.06);
+    backdrop-filter: blur(18px);
+}
+
+.logo {
+    color: var(--refresh-ink);
+}
+
+.logo span {
+    color: var(--refresh-teal);
+}
+
+.site-hero {
+    position: relative;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 85% 14%, rgba(232, 117, 77, 0.18), transparent 24%),
+        linear-gradient(135deg, #e9f8f4 0%, #f6fbf9 48%, #fff6ee 100%);
+}
+
+.site-hero::before {
+    width: 420px;
+    height: 420px;
+    border: 1px solid rgba(8, 127, 131, 0.16);
+    border-radius: 50%;
+    background: transparent;
+}
+
+.site-hero h1 {
+    max-width: 760px;
+    color: var(--refresh-ink);
+    font-size: clamp(2.8rem, 6vw, 5.4rem);
+    line-height: 0.98;
+}
+
+.site-hero-content > p {
+    max-width: 650px;
+    color: #496276;
+    font-size: 1.06rem;
+}
+
+.site-hero-panel,
+.feature-card,
+.care-tool-card,
+.table-container,
+.metric-card {
+    border: 1px solid var(--refresh-line);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 18px 45px rgba(16, 42, 67, 0.08);
+}
+
+.site-hero-panel {
+    border-top: 4px solid var(--refresh-coral);
+}
+
+.feature-card:hover,
+.care-tool-card:hover,
+.metric-card:hover {
+    border-color: rgba(8, 127, 131, 0.38);
+    box-shadow: 0 22px 52px rgba(8, 127, 131, 0.13);
+    transform: translateY(-4px);
+}
+
+.btn,
+.btn-auth,
+.btn-primary {
+    border-radius: 12px;
+    background: var(--refresh-teal);
+    box-shadow: 0 10px 22px rgba(8, 127, 131, 0.2);
+}
+
+.btn:hover,
+.btn-auth:hover,
+.btn-primary:hover {
+    background: var(--refresh-teal-dark);
+}
+
+.btn-outline {
+    border-color: var(--refresh-teal);
+    color: var(--refresh-teal);
+    background: transparent;
+    box-shadow: none;
+}
+
+.tag--accent,
+.hero-kicker {
+    border-color: rgba(232, 117, 77, 0.3);
+    background: #fff0e9;
+    color: #b84f30;
+}
+
+.dashboard-container {
+    background:
+        radial-gradient(circle at 100% 0, rgba(8, 127, 131, 0.1), transparent 28%),
+        #f4f8f7;
+}
+
+.dashboard-sidebar {
+    background: linear-gradient(180deg, #0b3448 0%, #075e68 100%) !important;
+}
+
+.dashboard-header {
+    border-left: 5px solid var(--refresh-coral) !important;
+    background: linear-gradient(135deg, #e5f6f2, #fff8f1) !important;
+}
+
+.dashboard-header h1 {
+    color: var(--refresh-ink);
+}
+
+@media (max-width: 640px) {
+    .site-hero {
+        padding-top: 56px;
+        padding-bottom: 48px;
+    }
+
+    .site-hero h1 {
+        font-size: clamp(2.6rem, 13vw, 4rem);
+    }
+
+    .site-hero-panel,
+    .feature-card,
+    .care-tool-card,
+    .table-container {
+        border-radius: 15px;
+    }
+}
