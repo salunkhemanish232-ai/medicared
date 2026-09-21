@@ -7665,13 +7665,6 @@ body {
     color: #c7d2fe;
 }
 
-.dashboard-logo-area::after {
-    content: "Medicare";
-    color: #e0f2fe;
-    font-weight: 800;
-    margin-left: 8px;
-}
-
 .btn,
 .btn-primary,
 .btn-auth,
@@ -10914,8 +10907,6 @@ footer {
         }
     }
 
-}
-
 /* Final mobile layout overrides */
 @media (max-width: 640px) {
     body { overflow-x: hidden; }
@@ -10986,5 +10977,41 @@ footer {
 
     .auth-card {
         padding: 24px 18px !important;
+    }
+}
+
+/* Keep dashboard columns inside the viewport on desktop and mobile. */
+@media (min-width: 901px) {
+    .dashboard-container {
+        width: min(100%, 1600px);
+        margin: 0 auto;
+        justify-content: flex-start;
+    }
+
+    .dashboard-sidebar {
+        flex: 0 0 280px;
+    }
+
+    .main-content {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 0;
+        max-width: none;
+        margin: 0;
+    }
+}
+
+@media (max-width: 900px) {
+    .dashboard-container {
+        width: 100%;
+        gap: 18px;
+        padding: 18px;
+    }
+
+    .main-content {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        margin: 0;
     }
 }

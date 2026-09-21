@@ -88,8 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentCrumb = `<span aria-current="page">${escapeHtml(pageTitle || 'Care Portal')}</span>`;
         breadcrumbs.innerHTML = `${homeCrumb} <span class="breadcrumb-separator">/</span> ${currentCrumb}`;
         const siteMain = document.querySelector('main') || document.querySelector('.main-content') || document.body.firstElementChild;
-        if (siteMain && siteMain.parentElement) {
-            siteMain.parentElement.insertBefore(breadcrumbs, siteMain);
+        if (siteMain) {
+            siteMain.insertBefore(breadcrumbs, siteMain.firstChild);
         } else {
             document.body.insertBefore(breadcrumbs, document.body.firstChild);
         }
@@ -191,9 +191,24 @@ document.addEventListener('DOMContentLoaded', () => {
     ensureBreadcrumbs();
     const menuToggle = document.querySelector('#menu-toggle');
     const navMenu = document.querySelector('#nav-menu');
-    if (menuToggle && navMenu) menuToggle.addEventListener('click', () => navMenu.classList.toggle('is-open'));
+    if (menuToggle && navMenu) {
+        menuToggle.setAttribute('aria-controls', 'nav-menu');
+        menuToggle.setAttribute('aria-expanded', 'false');
+        const setMenuState = (isOpen) => {
+            navMenu.classList.toggle('is-open', isOpen);
+            menuToggle.setAttribute('aria-expanded', String(isOpen));
+        };
+        menuToggle.addEventListener('click', () => setMenuState(!navMenu.classList.contains('is-open')));
+        navMenu.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => setMenuState(false)));
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 900) setMenuState(false);
+        });
+    }
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && navMenu) navMenu.classList.remove('is-open');
+        if (event.key === 'Escape' && navMenu) {
+            navMenu.classList.remove('is-open');
+            menuToggle?.setAttribute('aria-expanded', 'false');
+        }
     });
     const savedTheme = localStorage.getItem('medicareTheme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     applyTheme(savedTheme);

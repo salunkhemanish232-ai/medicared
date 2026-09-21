@@ -3,6 +3,7 @@ node_modules/
 .env.*
 !.env.example
 database/medicare-db.json
+database/medicare-db.backup-*
 database/*.db
 database/*.db-shm
 database/*.db-wal

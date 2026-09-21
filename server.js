@@ -211,15 +211,20 @@ async function ensureDatabase() {
         if (missingDoctors.length) {
             database.doctors = [...(database.doctors || []), ...missingDoctors.map((doctor) => ({ ...doctor }))];
         }
-        if (ADMIN_EMAIL && ADMIN_PASSWORD && !database.admins.some((admin) => admin.email === ADMIN_EMAIL)) {
-            database.admins.push({
-                id: crypto.randomUUID(),
-                name: 'System Administrator',
-                email: ADMIN_EMAIL,
-                role: 'admin',
-                password: hashPassword(ADMIN_PASSWORD),
-                createdAt: new Date().toISOString()
-            });
+        if (ADMIN_EMAIL && ADMIN_PASSWORD) {
+            const configuredAdmin = database.admins.find((admin) => admin.email === ADMIN_EMAIL);
+            if (configuredAdmin) {
+                configuredAdmin.password = hashPassword(ADMIN_PASSWORD);
+            } else {
+                database.admins.push({
+                    id: crypto.randomUUID(),
+                    name: 'System Administrator',
+                    email: ADMIN_EMAIL,
+                    role: 'admin',
+                    password: hashPassword(ADMIN_PASSWORD),
+                    createdAt: new Date().toISOString()
+                });
+            }
         }
         saveLegacyDatabase(database);
         return database;
@@ -392,8 +397,12 @@ async function ensureDatabase() {
     }
 
     const [adminRows] = ADMIN_EMAIL ? await pool.query('SELECT * FROM admins WHERE email = ?', [ADMIN_EMAIL]) : [[]];
-    if (ADMIN_EMAIL && ADMIN_PASSWORD && !adminRows.length) {
-        await pool.query('INSERT INTO admins (id, name, email, role, password, createdAt) VALUES (?, ?, ?, ?, ?, ?)', [crypto.randomUUID(), 'System Administrator', ADMIN_EMAIL, 'admin', hashPassword(ADMIN_PASSWORD), new Date().toISOString()]);
+    if (ADMIN_EMAIL && ADMIN_PASSWORD) {
+        if (adminRows.length) {
+            await pool.query('UPDATE admins SET password = ?, role = ? WHERE email = ?', [hashPassword(ADMIN_PASSWORD), 'admin', ADMIN_EMAIL]);
+        } else {
+            await pool.query('INSERT INTO admins (id, name, email, role, password, createdAt) VALUES (?, ?, ?, ?, ?, ?)', [crypto.randomUUID(), 'System Administrator', ADMIN_EMAIL, 'admin', hashPassword(ADMIN_PASSWORD), new Date().toISOString()]);
+        }
     }
 
     const [users] = await pool.query('SELECT * FROM users ORDER BY createdAt ASC');
