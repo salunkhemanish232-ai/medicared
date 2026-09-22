@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node tests/auth-smoke.test.js && node tests/doctor-smoke.test.js && node tests/security-smoke.test.js && node tests/page-contract.test.js"
+    "test": "node tests/auth-smoke.test.js && node tests/doctor-smoke.test.js && node tests/security-smoke.test.js && node tests/page-contract.test.js && node tests/service-worker.test.js"
   },
   "engines": {
     "node": ">=20"
