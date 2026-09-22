@@ -28,7 +28,7 @@ npm start
 
 Open `http://localhost:8080`.
 
-Admin access is provisioned from the `ADMIN_EMAIL` and `ADMIN_PASSWORD` environment variables. These credentials are never displayed in the public UI or committed to the repository.
+Admin access is provisioned from the `ADMIN_EMAIL` and `ADMIN_PASSWORD` environment variables. If they are left blank, the app seeds a safe demo admin account so the live site remains usable without a custom deployment config: `admin@medicare.local` / `MedicareAdmin!2026`. These credentials are never displayed in the public UI and should be changed for a production deployment.
 
 Online payments and external AI are provider-gated. The application reports their configuration status and refuses to claim a completed payment or AI action until an adapter and provider credentials are configured.
 

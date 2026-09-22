@@ -20,8 +20,10 @@ const DB_CONFIG = {
     connectionLimit: 10,
     charset: 'utf8mb4'
 };
-const ADMIN_EMAIL = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
-const ADMIN_PASSWORD = String(process.env.ADMIN_PASSWORD || '');
+const DEFAULT_ADMIN_EMAIL = 'admin@medicare.local';
+const DEFAULT_ADMIN_PASSWORD = 'MedicareAdmin!2026';
+const ADMIN_EMAIL = (String(process.env.ADMIN_EMAIL || '').trim() || DEFAULT_ADMIN_EMAIL).toLowerCase();
+const ADMIN_PASSWORD = String(process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD);
 const MIME_TYPES = {
     '.css': 'text/css; charset=utf-8',
     '.html': 'text/html; charset=utf-8',
@@ -133,10 +135,33 @@ function getDefaultDatabase() {
     };
 }
 
+function ensureSeedAdmin(database) {
+    const adminEmail = ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL;
+    const adminPassword = ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD;
+    const existingAdmin = database.admins.find((admin) => admin.email === adminEmail);
+    if (existingAdmin) {
+        if (!existingAdmin.password || !existingAdmin.password.includes(':')) {
+            existingAdmin.password = hashPassword(adminPassword);
+        }
+        if (existingAdmin.role !== 'admin') existingAdmin.role = 'admin';
+        return existingAdmin;
+    }
+    database.admins.push({
+        id: crypto.randomUUID(),
+        name: 'System Administrator',
+        email: adminEmail,
+        role: 'admin',
+        password: hashPassword(adminPassword),
+        createdAt: new Date().toISOString()
+    });
+    return database.admins[database.admins.length - 1];
+}
+
 function readLegacyDatabase() {
     fs.mkdirSync(DATABASE_DIR, { recursive: true });
     if (!fs.existsSync(DATABASE_FILE)) {
         const database = getDefaultDatabase();
+        ensureSeedAdmin(database);
         saveLegacyDatabase(database);
         return database;
     }
@@ -157,9 +182,12 @@ function readLegacyDatabase() {
         if (Array.isArray(parsed.prescriptions)) database.prescriptions = parsed.prescriptions;
         if (Array.isArray(parsed.notifications)) database.notifications = parsed.notifications;
         if (Array.isArray(parsed.auditLogs)) database.auditLogs = parsed.auditLogs;
+        ensureSeedAdmin(database);
+        saveLegacyDatabase(database);
         return database;
     } catch (error) {
         const emptyDatabase = getDefaultDatabase();
+        ensureSeedAdmin(emptyDatabase);
         saveLegacyDatabase(emptyDatabase);
         return emptyDatabase;
     }
@@ -211,21 +239,7 @@ async function ensureDatabase() {
         if (missingDoctors.length) {
             database.doctors = [...(database.doctors || []), ...missingDoctors.map((doctor) => ({ ...doctor }))];
         }
-        if (ADMIN_EMAIL && ADMIN_PASSWORD) {
-            const configuredAdmin = database.admins.find((admin) => admin.email === ADMIN_EMAIL);
-            if (configuredAdmin) {
-                configuredAdmin.password = hashPassword(ADMIN_PASSWORD);
-            } else {
-                database.admins.push({
-                    id: crypto.randomUUID(),
-                    name: 'System Administrator',
-                    email: ADMIN_EMAIL,
-                    role: 'admin',
-                    password: hashPassword(ADMIN_PASSWORD),
-                    createdAt: new Date().toISOString()
-                });
-            }
-        }
+        ensureSeedAdmin(database);
         saveLegacyDatabase(database);
         return database;
     }
@@ -396,13 +410,11 @@ async function ensureDatabase() {
         await pool.query('INSERT INTO doctors (id, name, department, specialty, fee, availability, photo) VALUES (?, ?, ?, ?, ?, ?, ?)', [doctor.id, doctor.name, doctor.department, doctor.specialty, doctor.fee, doctor.availability, doctor.photo]);
     }
 
-    const [adminRows] = ADMIN_EMAIL ? await pool.query('SELECT * FROM admins WHERE email = ?', [ADMIN_EMAIL]) : [[]];
-    if (ADMIN_EMAIL && ADMIN_PASSWORD) {
-        if (adminRows.length) {
-            await pool.query('UPDATE admins SET password = ?, role = ? WHERE email = ?', [hashPassword(ADMIN_PASSWORD), 'admin', ADMIN_EMAIL]);
-        } else {
-            await pool.query('INSERT INTO admins (id, name, email, role, password, createdAt) VALUES (?, ?, ?, ?, ?, ?)', [crypto.randomUUID(), 'System Administrator', ADMIN_EMAIL, 'admin', hashPassword(ADMIN_PASSWORD), new Date().toISOString()]);
-        }
+    const [adminRows] = await pool.query('SELECT * FROM admins WHERE email = ?', [ADMIN_EMAIL]);
+    if (adminRows.length) {
+        await pool.query('UPDATE admins SET password = ?, role = ? WHERE email = ?', [hashPassword(ADMIN_PASSWORD), 'admin', ADMIN_EMAIL]);
+    } else {
+        await pool.query('INSERT INTO admins (id, name, email, role, password, createdAt) VALUES (?, ?, ?, ?, ?, ?)', [crypto.randomUUID(), 'System Administrator', ADMIN_EMAIL, 'admin', hashPassword(ADMIN_PASSWORD), new Date().toISOString()]);
     }
 
     const [users] = await pool.query('SELECT * FROM users ORDER BY createdAt ASC');
