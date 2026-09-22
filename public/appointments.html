@@ -22,17 +22,7 @@
         <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation menu">
             <i class="fa-solid fa-bars"></i>
         </button>
-        <ul class="menu" id="nav-menu">
-            <li><a href="index.html" class="nav-link">Home</a></li>
-            <li><a href="about.html" class="nav-link">About</a></li>
-            <li><a href="services.html" class="nav-link">Services</a></li>
-            <li><a href="doctors.html" class="nav-link">Doctors</a></li>
-            <li><a href="appointments.html" class="nav-link active">Appointments</a></li>
-            <li><a href="contact.html" class="nav-link">Contact</a></li>
-            <li><a href="login.html" id="nav-login-link" class="nav-link">Login</a></li>
-            <li><a href="register.html" id="nav-register-link" class="nav-link nav-register-link">Register</a></li>
-            <li id="nav-logout-item" style="display:none;"><a href="#" id="nav-logout-link" class="nav-link">Logout</a></li>
-        </ul>
+        <ul class="menu" id="nav-menu"><li><a href="index.html" class="nav-link">Home</a></li><li><a href="about.html" class="nav-link">About</a></li><li><a href="doctors.html" class="nav-link">Doctors</a></li><li><a href="services.html" class="nav-link">Departments</a></li><li><a href="services.html" class="nav-link">Services</a></li><li><a href="appointments.html" class="nav-link">Appointment</a></li><li><a href="contact.html" class="nav-link">Contact</a></li><li><a href="login.html" id="nav-login-link" class="nav-link">Login</a></li><li><a href="register.html" id="nav-register-link" class="nav-link nav-register-link">Register</a></li><li id="nav-logout-item" style="display:none"><a href="#" id="nav-logout-link" class="nav-link">Logout</a></li></ul>
     </div>
 </nav>
 
@@ -109,11 +99,23 @@
     <div class="modal-content">
         <div class="auth-header">
             <i class="fa-solid fa-calendar-plus auth-icon"></i>
-            <h2>Book Appointment</h2>
-            <p>Select your doctor and visit time.</p>
+            <h2>Book Your Appointment</h2>
+            <p>Complete the details below and our care team will confirm your visit.</p>
         </div>
 
         <form id="bookingForm" class="auth-form">
+            <div class="booking-form-grid">
+                <div class="form-group"><label for="patientName"><i class="fa-solid fa-user"></i> Patient Name</label><input id="patientName" readonly></div>
+                <div class="form-group"><label for="patientEmail"><i class="fa-solid fa-envelope"></i> Email</label><input id="patientEmail" type="email" readonly></div>
+                <div class="form-group"><label for="patientPhone"><i class="fa-solid fa-phone"></i> Phone</label><input id="patientPhone" readonly></div>
+            </div>
+            <div class="form-group">
+                <label for="departmentSelect"><i class="fa-solid fa-building-columns"></i> Department</label>
+                <select id="departmentSelect" required>
+                    <option value="">Select department...</option>
+                    <option>Cardiology</option><option>Orthopedics</option><option>Pediatrics</option><option>Dermatology</option><option>ENT</option>
+                </select>
+            </div>
             <div class="form-group">
                 <label for="doctorSelect"><i class="fa-solid fa-user-md"></i> Select Doctor</label>
                 <select id="doctorSelect" required>
@@ -153,6 +155,7 @@
         <span class="tag tag--success">Booking received</span>
         <h2>Appointment booked successfully!</h2>
         <p id="bookingSuccessText">Your request is saved. Our care team will confirm the visit shortly.</p>
+        <div class="appointment-confirmation-id"><span>Appointment ID</span><strong id="bookingAppointmentId">Pending</strong></div>
         <div class="booking-success-actions">
             <a href="dashboard.html" class="btn"><i class="fa-solid fa-chart-line"></i> Open dashboard</a>
             <a href="index.html" class="btn btn-outline"><i class="fa-solid fa-house"></i> Go home</a>
@@ -167,5 +170,4 @@
 <script src="app.js"></script>
 </body>
 </html>
-
 

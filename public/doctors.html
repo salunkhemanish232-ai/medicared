@@ -22,17 +22,7 @@
         <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation menu">
             <i class="fa-solid fa-bars"></i>
         </button>
-        <ul class="menu" id="nav-menu">
-            <li><a href="index.html" class="nav-link">Home</a></li>
-            <li><a href="about.html" class="nav-link">About</a></li>
-            <li><a href="services.html" class="nav-link">Services</a></li>
-            <li><a href="doctors.html" class="nav-link active">Doctors</a></li>
-            <li><a href="appointments.html" class="nav-link">Appointments</a></li>
-            <li><a href="contact.html" class="nav-link">Contact</a></li>
-            <li><a href="login.html" id="nav-login-link" class="nav-link">Login</a></li>
-            <li><a href="register.html" id="nav-register-link" class="nav-link nav-register-link">Register</a></li>
-            <li id="nav-logout-item" style="display:none;"><a href="#" id="nav-logout-link" class="nav-link">Logout</a></li>
-        </ul>
+        <ul class="menu" id="nav-menu"><li><a href="index.html" class="nav-link">Home</a></li><li><a href="about.html" class="nav-link">About</a></li><li><a href="doctors.html" class="nav-link">Doctors</a></li><li><a href="services.html" class="nav-link">Departments</a></li><li><a href="services.html" class="nav-link">Services</a></li><li><a href="appointments.html" class="nav-link">Appointment</a></li><li><a href="contact.html" class="nav-link">Contact</a></li><li><a href="login.html" id="nav-login-link" class="nav-link">Login</a></li><li><a href="register.html" id="nav-register-link" class="nav-link nav-register-link">Register</a></li><li id="nav-logout-item" style="display:none"><a href="#" id="nav-logout-link" class="nav-link">Logout</a></li></ul>
     </div>
 </nav>
 
@@ -75,13 +65,33 @@
             <i class="fa-solid fa-magnifying-glass"></i>
             <input id="doctorSearchInput" type="search" placeholder="Search by doctor or specialty" aria-label="Search doctors">
         </label>
-        <div class="doctor-filter public-filter" aria-label="Filter doctors by department">
+        <div class="doctor-filter public-filter" aria-label="Filter doctors">
             <button type="button" class="filter-btn active" data-department="all">All specialists</button>
             <button type="button" class="filter-btn" data-department="Cardiology">Cardiology</button>
             <button type="button" class="filter-btn" data-department="Pediatrics">Pediatrics</button>
             <button type="button" class="filter-btn" data-department="Orthopedics">Orthopedics</button>
             <button type="button" class="filter-btn" data-department="Dermatology">Dermatology</button>
             <button type="button" class="filter-btn" data-department="ENT">ENT</button>
+        </div>
+        <div class="doctor-select-filters">
+            <label>Specialization
+                <select id="doctorSpecializationFilter">
+                    <option value="all">All specializations</option>
+                    <option value="heart">Heart and blood pressure</option>
+                    <option value="bone">Bone and joint care</option>
+                    <option value="child">Child health</option>
+                    <option value="skin">Skin and hair care</option>
+                    <option value="ear">Ear, nose and throat</option>
+                </select>
+            </label>
+            <label>Availability
+                <select id="doctorAvailabilityFilter">
+                    <option value="all">Any availability</option>
+                    <option value="Mon-Fri">Monday to Friday</option>
+                    <option value="Mon-Sat">Monday to Saturday</option>
+                    <option value="Tue-Sat">Tuesday to Saturday</option>
+                </select>
+            </label>
         </div>
     </div>
 
@@ -105,4 +115,3 @@
 <script src="app.js"></script>
 </body>
 </html>
-

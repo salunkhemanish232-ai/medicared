@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
             const adminToken = localStorage.getItem('medicareAdminToken');
-            if (adminToken) headers.Authorization = `Bearer ${adminToken}`;
+            if (adminToken) headers.Authorization = 'Bearer ' + adminToken;
             response = await fetch(path, { ...options, credentials: 'same-origin', headers });
         } catch (error) {
             throw new Error('Cannot reach the Medicare server. Please check your connection and try again.');
@@ -452,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const { doctors } = await api('/api/doctors');
             container.innerHTML = doctors.map((doctor) => `
-                <article class="feature-card doctor-card" data-department="${doctor.department}">
+                <article class="feature-card doctor-card" data-department="${doctor.department}" data-specialization="${doctor.specialty.toLowerCase()}" data-availability="${doctor.availability}">
                     <div class="doctor-portrait">
                         <img src="${doctor.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80'}" alt="${doctor.name}">
                     </div>
@@ -462,26 +462,33 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="doctor-verified"><i class="fa-solid fa-circle-check"></i> Verified</span>
                         </div>
                         <h3>${doctor.name}</h3>
+                        <div class="doctor-rating"><span>★★★★★</span> <strong>4.8</strong></div>
                         <p class="subtitle">${doctor.specialty}</p>
                         <div class="doctor-meta">
                             <span><i class="fa-regular fa-calendar"></i> ${doctor.availability}</span>
                             <strong>${doctor.fee}<small> / visit</small></strong>
                         </div>
-                        <a href="appointments.html" class="btn doctor-book-btn">Book consultation <i class="fa-solid fa-arrow-right"></i></a>
+                        <div class="doctor-card-actions"><a href="doctors-detail.html?id=${encodeURIComponent(doctor.id)}" class="btn btn-outline">View profile</a><a href="appointments.html" class="btn doctor-book-btn">Book appointment</a></div>
                     </div>
                 </article>
             `).join('');
 
             const searchInput = document.querySelector('#doctorSearchInput');
             const resultCount = document.querySelector('#doctorResultCount');
+            const specializationFilter = document.querySelector('#doctorSpecializationFilter');
+            const availabilityFilter = document.querySelector('#doctorAvailabilityFilter');
             let selectedDepartment = 'all';
             const updateDoctorResults = () => {
                 const searchTerm = (searchInput?.value || '').trim().toLowerCase();
+                const selectedSpecialization = specializationFilter?.value || 'all';
+                const selectedAvailability = availabilityFilter?.value || 'all';
                 let visibleCount = 0;
                 document.querySelectorAll('.doctor-card').forEach((card) => {
                     const matchesDepartment = selectedDepartment === 'all' || card.dataset.department === selectedDepartment;
                     const matchesSearch = !searchTerm || card.textContent.toLowerCase().includes(searchTerm);
-                    const visible = matchesDepartment && matchesSearch;
+                    const matchesSpecialization = selectedSpecialization === 'all' || card.dataset.specialization.includes(selectedSpecialization);
+                    const matchesAvailability = selectedAvailability === 'all' || card.dataset.availability === selectedAvailability;
+                    const visible = matchesDepartment && matchesSearch && matchesSpecialization && matchesAvailability;
                     card.style.display = visible ? '' : 'none';
                     if (visible) visibleCount += 1;
                 });
@@ -495,6 +502,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateDoctorResults();
             }));
             searchInput?.addEventListener('input', updateDoctorResults);
+            specializationFilter?.addEventListener('change', updateDoctorResults);
+            availabilityFilter?.addEventListener('change', updateDoctorResults);
             updateDoctorResults();
         } catch (error) {
             container.innerHTML = `<div class="form-error" style="display:block;">${error.message}</div>`;
@@ -646,6 +655,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const bookingForm = document.querySelector('#bookingForm');
     const doctorSelect = document.querySelector('#doctorSelect');
     const appointmentDate = document.querySelector('#appointmentDate');
+    const departmentSelect = document.querySelector('#departmentSelect');
+    const patientName = document.querySelector('#patientName');
+    const patientEmail = document.querySelector('#patientEmail');
+    const patientPhone = document.querySelector('#patientPhone');
+    if (session) {
+        if (patientName) patientName.value = session.name || '';
+        if (patientEmail) patientEmail.value = session.email || '';
+        if (patientPhone) patientPhone.value = session.phone || '';
+    }
     if (appointmentDate) appointmentDate.min = new Date().toISOString().split('T')[0];
     if (doctorSelect) api('/api/doctors').then(({ doctors }) => doctors.forEach((doctor) => doctorSelect.add(new Option(`${doctor.name} - ${doctor.department}`, `${doctor.name} - ${doctor.department}`)))).catch((error) => showError('#bookingForm', error.message));
     document.querySelector('#openBookingBtn')?.addEventListener('click', () => {
@@ -655,11 +673,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (bookingForm) bookingForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         try {
-            const result = await api('/api/appointments', { method: 'POST', body: JSON.stringify({ doctor: doctorSelect.value, date: document.querySelector('#appointmentDate').value, time: document.querySelector('#appointmentTime').value, reason: document.querySelector('#reason').value, patient: session.email }) });
+            const result = await api('/api/appointments', { method: 'POST', body: JSON.stringify({ doctor: doctorSelect.value, department: departmentSelect?.value || '', date: document.querySelector('#appointmentDate').value, time: document.querySelector('#appointmentTime').value, reason: document.querySelector('#reason').value, patient: session.email }) });
             bookingForm.reset(); bookingModal.style.setProperty('display', 'none', 'important'); renderAppointments();
             const bookingSuccess = document.querySelector('#bookingSuccess');
             const bookingSuccessText = document.querySelector('#bookingSuccessText');
             if (bookingSuccessText && result.appointment) bookingSuccessText.textContent = `Your ${result.appointment.date} visit request is saved. Our care team will confirm it shortly.`;
+            const bookingAppointmentId = document.querySelector('#bookingAppointmentId');
+            if (bookingAppointmentId) bookingAppointmentId.textContent = result.appointment?.id || 'Pending';
             bookingSuccess?.classList.add('is-visible');
             bookingSuccess?.setAttribute('aria-hidden', 'false');
         } catch (error) { showError('#bookingForm', error.message); }
