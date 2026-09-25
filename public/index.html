@@ -13,7 +13,18 @@
     <div class="navbar-container">
         <a href="index.html" class="logo"><i class="fa-solid fa-hospital"></i> Medi<span>care</span></a>
         <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation menu"><i class="fa-solid fa-bars"></i></button>
-        <ul class="menu" id="nav-menu"><li><a href="index.html" class="nav-link">Home</a></li><li><a href="about.html" class="nav-link">About</a></li><li><a href="doctors.html" class="nav-link">Doctors</a></li><li><a href="services.html" class="nav-link">Departments</a></li><li><a href="services.html" class="nav-link">Services</a></li><li><a href="appointments.html" class="nav-link">Appointment</a></li><li><a href="contact.html" class="nav-link">Contact</a></li><li><a href="login.html" id="nav-login-link" class="nav-link">Login</a></li><li><a href="register.html" id="nav-register-link" class="nav-link nav-register-link">Register</a></li><li id="nav-logout-item" style="display:none"><a href="#" id="nav-logout-link" class="nav-link">Logout</a></li></ul>
+        <ul class="menu" id="nav-menu">
+            <li><a href="index.html" class="nav-link">Home</a></li>
+            <li><a href="about.html" class="nav-link">About</a></li>
+            <li><a href="doctors.html" class="nav-link">Doctors</a></li>
+            <li><a href="services.html" class="nav-link">Departments</a></li>
+            <li><a href="services.html" class="nav-link">Services</a></li>
+            <li><a href="appointments.html" class="nav-link">Appointment</a></li>
+            <li><a href="contact.html" class="nav-link">Contact</a></li>
+            <li><a href="login.html" id="nav-login-link" class="nav-link">Login</a></li>
+            <li><a href="register.html" id="nav-register-link" class="nav-link nav-register-link">Register</a></li>
+            <li id="nav-logout-item" style="display:none"><a href="#" id="nav-logout-link" class="nav-link">Logout</a></li>
+        </ul>
     </div>
 </nav>
 
@@ -24,33 +35,38 @@
         <p>Compassionate doctors, advanced departments, and dependable support for every stage of your healthcare journey.</p>
         <div class="hero-actions">
             <a href="appointments.html" class="btn"><i class="fa-solid fa-calendar-plus"></i> Book Appointment</a>
-            <a href="doctors.html" class="btn btn-outline"><i class="fa-solid fa-user-doctor"></i> Find a Doctor</a>
+            <a href="doctors.html" class="btn btn-outline"><i class="fa-solid fa-user-doctor"></i> Explore Doctors</a>
         </div>
-        <div class="hero-trust"><span><i class="fa-solid fa-circle-check"></i> 24/7 care coordination</span><span><i class="fa-solid fa-shield-heart"></i> Patient-first service</span></div>
+        <div class="hero-trust">
+            <span><i class="fa-solid fa-circle-check"></i> 24/7 care coordination</span>
+            <span><i class="fa-solid fa-shield-heart"></i> Patient-first service</span>
+        </div>
     </div>
     <div class="home-hero-visual" aria-label="Doctor providing care">
         <div class="home-hero-orbit"></div>
-        <div class="home-hero-doctor"><i class="fa-solid fa-user-doctor"></i></div>
-        <div class="home-hero-badge home-hero-badge--top"><i class="fa-solid fa-heart-pulse"></i><span><strong>Expert care</strong><small>Across 6 departments</small></span></div>
+        <img class="home-hero-photo" src="https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=1200&q=80" alt="Doctor consulting a patient">
+        <div class="home-hero-badge home-hero-badge--top"><i class="fa-solid fa-heart-pulse"></i><span><strong>Expert care</strong><small>Across 5 departments</small></span></div>
         <div class="home-hero-badge home-hero-badge--bottom"><i class="fa-solid fa-calendar-check"></i><span><strong>Easy booking</strong><small>Appointments online</small></span></div>
     </div>
 </main>
 
 <section class="home-stats" aria-label="Medicare statistics">
-    <div><i class="fa-solid fa-user-doctor"></i><strong>50+</strong><span>Doctors</span></div>
-    <div><i class="fa-solid fa-building-columns"></i><strong>12</strong><span>Departments</span></div>
-    <div><i class="fa-solid fa-hospital-user"></i><strong>10k+</strong><span>Patients</span></div>
-    <div><i class="fa-solid fa-calendar-check"></i><strong>25k+</strong><span>Appointments</span></div>
+    <div><i class="fa-solid fa-user-doctor"></i><strong id="statDoctors">50+</strong><span>Doctors</span></div>
+    <div><i class="fa-solid fa-building-columns"></i><strong id="statDepartments">5</strong><span>Departments</span></div>
+    <div><i class="fa-solid fa-hospital-user"></i><strong id="statPatients">10k+</strong><span>Patients</span></div>
+    <div><i class="fa-solid fa-calendar-check"></i><strong id="statAppointments">25k+</strong><span>Appointments</span></div>
 </section>
 
 <section class="website-section home-services">
-    <div class="section-headline"><div><span class="tag tag--primary"><i class="fa-solid fa-briefcase-medical"></i> Our services</span><h2>Everything you need for better health</h2><p class="subtitle">Modern medical care delivered with expertise, clarity, and compassion.</p></div><a href="services.html" class="btn btn-outline">View all services <i class="fa-solid fa-arrow-right"></i></a></div>
-    <div class="simple-card-grid">
-        <article class="feature-card"><i class="fa-solid fa-heart-pulse flow-icon"></i><h3>Cardiology</h3><p class="subtitle">Heart health, prevention, diagnosis, and ongoing specialist care.</p><a href="services.html" class="text-link">Explore department <i class="fa-solid fa-arrow-right"></i></a></article>
-        <article class="feature-card"><i class="fa-solid fa-bone flow-icon"></i><h3>Orthopedics</h3><p class="subtitle">Expert support for bones, joints, mobility, and injury recovery.</p><a href="services.html" class="text-link">Explore department <i class="fa-solid fa-arrow-right"></i></a></article>
-        <article class="feature-card"><i class="fa-solid fa-child flow-icon"></i><h3>Pediatrics</h3><p class="subtitle">Gentle, family-centered care for children at every age.</p><a href="services.html" class="text-link">Explore department <i class="fa-solid fa-arrow-right"></i></a></article>
-        <article class="feature-card"><i class="fa-solid fa-flask-vial flow-icon"></i><h3>Diagnostics</h3><p class="subtitle">Reliable tests and reports to help your doctor guide your care.</p><a href="diagnostics.html" class="text-link">Explore diagnostics <i class="fa-solid fa-arrow-right"></i></a></article>
+    <div class="section-headline">
+        <div>
+            <span class="tag tag--primary"><i class="fa-solid fa-briefcase-medical"></i> Our services</span>
+            <h2>Everything you need for better health</h2>
+            <p class="subtitle">Modern medical care delivered with expertise, clarity, and compassion.</p>
+        </div>
+        <a href="services.html" class="btn btn-outline">View all services <i class="fa-solid fa-arrow-right"></i></a>
     </div>
+    <div class="simple-card-grid home-department-grid" id="homeDepartmentList"></div>
 </section>
 
 <section class="website-section home-doctors">
@@ -59,11 +75,11 @@
 </section>
 
 <section class="website-section home-testimonials">
-    <div class="section-headline"><div><span class="tag tag--accent"><i class="fa-solid fa-quote-left"></i> Patient stories</span><h2>Care that patients remember</h2></div></div>
+    <div class="section-headline"><div><span class="tag tag--accent"><i class="fa-solid fa-quote-left"></i> Sample patient stories</span><h2>Care that patients remember</h2></div></div>
     <div class="simple-card-grid">
-        <article class="feature-card testimonial-card"><div class="testimonial-stars">★★★★★</div><p>“The team explained every step clearly and made my appointment feel calm and organized.”</p><strong>Priya M.</strong><span class="subtitle">Cardiology patient</span></article>
-        <article class="feature-card testimonial-card"><div class="testimonial-stars">★★★★★</div><p>“Booking online was simple, and the doctor gave me time to ask all my questions.”</p><strong>Arjun K.</strong><span class="subtitle">Orthopedics patient</span></article>
-        <article class="feature-card testimonial-card"><div class="testimonial-stars">★★★★★</div><p>“A warm, professional hospital with genuinely caring staff from reception to follow-up.”</p><strong>Meera S.</strong><span class="subtitle">Pediatrics patient</span></article>
+        <article class="feature-card testimonial-card"><div class="testimonial-stars">★★★★★</div><p>"The team explained every step clearly and made my appointment feel calm and organized."</p><strong>Priya M.</strong><span class="subtitle">Cardiology patient</span></article>
+        <article class="feature-card testimonial-card"><div class="testimonial-stars">★★★★★</div><p>"Booking online was simple, and the doctor gave me time to ask all my questions."</p><strong>Arjun K.</strong><span class="subtitle">Orthopedics patient</span></article>
+        <article class="feature-card testimonial-card"><div class="testimonial-stars">★★★★★</div><p>"A warm, professional hospital with genuinely caring staff from reception to follow-up."</p><strong>Meera S.</strong><span class="subtitle">Pediatrics patient</span></article>
     </div>
 </section>
 

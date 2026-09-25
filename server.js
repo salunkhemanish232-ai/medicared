@@ -35,6 +35,22 @@ const MIME_TYPES = {
     '.svg': 'image/svg+xml'
 };
 
+const DEFAULT_DEPARTMENTS = [
+    { id: 'DEP001', name: 'Cardiology', description: 'Heart health, preventive care, and blood pressure management.', active: true },
+    { id: 'DEP002', name: 'Orthopedics', description: 'Joint, bone, and mobility care for active recovery and long-term support.', active: true },
+    { id: 'DEP003', name: 'Pediatrics', description: 'Child-first healthcare, immunization guidance, and wellness support.', active: true },
+    { id: 'DEP004', name: 'Dermatology', description: 'Skin, hair, and allergy care with specialist treatment pathways.', active: true },
+    { id: 'DEP005', name: 'ENT', description: 'Ear, nose, and throat consultations for common and chronic conditions.', active: true }
+];
+
+const DEFAULT_SERVICES = [
+    { id: 'SRV001', name: 'Primary Consultation', category: 'General Care', description: 'Initial consultation and personalized treatment planning.', price: 'Rs 500', active: true },
+    { id: 'SRV002', name: 'Cardiac Checkup', category: 'Cardiology', description: 'Heart screening, evaluation, and preventive care planning.', price: 'Rs 1200', active: true },
+    { id: 'SRV003', name: 'Orthopedic Assessment', category: 'Orthopedics', description: 'Joint and mobility support with specialist assessment.', price: 'Rs 900', active: true },
+    { id: 'SRV004', name: 'Pediatric Wellness', category: 'Pediatrics', description: 'Growth, vaccination, and preventive child healthcare.', price: 'Rs 650', active: true },
+    { id: 'SRV005', name: 'Diagnostic Lab', category: 'Diagnostics', description: 'Essential pathology and laboratory investigations.', price: 'Rs 450', active: true }
+];
+
 const DEFAULT_DOCTORS = [
     {
         id: 'D001',
@@ -126,6 +142,8 @@ function getDefaultDatabase() {
         patients: [],
         messages: [],
         doctors: DEFAULT_DOCTORS,
+        departments: DEFAULT_DEPARTMENTS,
+        services: DEFAULT_SERVICES,
         labTests: DEFAULT_LAB_TESTS,
         medicalRecords: [],
         labReports: [],
@@ -176,6 +194,8 @@ function readLegacyDatabase() {
         if (Array.isArray(parsed.patients)) database.patients = parsed.patients;
         if (Array.isArray(parsed.messages)) database.messages = parsed.messages;
         if (Array.isArray(parsed.doctors)) database.doctors = parsed.doctors;
+        if (Array.isArray(parsed.departments)) database.departments = parsed.departments;
+        if (Array.isArray(parsed.services)) database.services = parsed.services;
         if (Array.isArray(parsed.labTests)) database.labTests = parsed.labTests;
         if (Array.isArray(parsed.medicalRecords)) database.medicalRecords = parsed.medicalRecords;
         if (Array.isArray(parsed.labReports)) database.labReports = parsed.labReports;
@@ -323,7 +343,46 @@ async function ensureDatabase() {
             specialty TEXT NOT NULL,
             fee VARCHAR(255) NOT NULL,
             availability VARCHAR(255) NOT NULL,
-            photo TEXT NOT NULL
+            photo TEXT NOT NULL,
+            createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updatedAt DATETIME NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS departments (
+            id VARCHAR(255) PRIMARY KEY,
+            name VARCHAR(255) NOT NULL UNIQUE,
+            description TEXT NOT NULL,
+            active BOOLEAN NOT NULL DEFAULT true,
+            createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updatedAt DATETIME NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS services (
+            id VARCHAR(255) PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            category VARCHAR(255) NOT NULL,
+            description TEXT NOT NULL,
+            price VARCHAR(255) NOT NULL,
+            active BOOLEAN NOT NULL DEFAULT true,
+            createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updatedAt DATETIME NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS doctor_availability (
+            id VARCHAR(255) PRIMARY KEY,
+            doctorId VARCHAR(255) NOT NULL,
+            day VARCHAR(50) NOT NULL,
+            fromTime VARCHAR(50) NOT NULL,
+            toTime VARCHAR(50) NOT NULL,
+            createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updatedAt DATETIME NULL,
+            FOREIGN KEY (doctorId) REFERENCES doctors(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
 
@@ -423,6 +482,8 @@ async function ensureDatabase() {
     const [patients] = await pool.query('SELECT * FROM patients ORDER BY id ASC');
     const [messages] = await pool.query('SELECT * FROM messages ORDER BY createdAt ASC');
     const [doctors] = await pool.query('SELECT * FROM doctors ORDER BY id ASC');
+    const [departments] = await pool.query('SELECT * FROM departments ORDER BY createdAt ASC');
+    const [services] = await pool.query('SELECT * FROM services ORDER BY createdAt ASC');
     const [medicalRecords] = await pool.query('SELECT * FROM medical_records ORDER BY createdAt ASC');
     const [labReports] = await pool.query('SELECT * FROM lab_reports ORDER BY createdAt ASC');
     const [labTests] = await pool.query('SELECT * FROM lab_tests ORDER BY id ASC');
@@ -430,7 +491,7 @@ async function ensureDatabase() {
     const [notifications] = await pool.query('SELECT * FROM notifications ORDER BY createdAt ASC');
     const [auditLogs] = await pool.query('SELECT * FROM audit_logs ORDER BY createdAt ASC');
 
-    return { users, admins, appointments, patients, messages, doctors, labTests, medicalRecords, labReports, prescriptions, notifications, auditLogs };
+    return { users, admins, appointments, patients, messages, doctors, departments, services, labTests, medicalRecords, labReports, prescriptions, notifications, auditLogs };
 }
 
 async function readDatabase() {
@@ -454,6 +515,9 @@ async function writeDatabase(database) {
     await pool.query('DELETE FROM patients');
     await pool.query('DELETE FROM messages');
     await pool.query('DELETE FROM doctors');
+    await pool.query('DELETE FROM doctor_availability');
+    await pool.query('DELETE FROM departments');
+    await pool.query('DELETE FROM services');
     await pool.query('DELETE FROM medical_records');
     await pool.query('DELETE FROM lab_reports');
     await pool.query('DELETE FROM lab_tests');
@@ -482,7 +546,15 @@ async function writeDatabase(database) {
     }
 
     for (const doctor of database.doctors || []) {
-        await pool.query('INSERT INTO doctors (id, name, department, specialty, fee, availability, photo) VALUES (?, ?, ?, ?, ?, ?, ?)', [doctor.id, doctor.name, doctor.department, doctor.specialty, doctor.fee, doctor.availability, doctor.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80']);
+        await pool.query('INSERT INTO doctors (id, name, department, specialty, fee, availability, photo, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [doctor.id, doctor.name, doctor.department, doctor.specialty, doctor.fee, doctor.availability, doctor.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80', doctor.createdAt || new Date().toISOString(), doctor.updatedAt || null]);
+    }
+
+    for (const department of database.departments || []) {
+        await pool.query('INSERT INTO departments (id, name, description, active, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)', [department.id, department.name, department.description, department.active !== false ? 1 : 0, department.createdAt || new Date().toISOString(), department.updatedAt || null]);
+    }
+
+    for (const service of database.services || []) {
+        await pool.query('INSERT INTO services (id, name, category, description, price, active, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [service.id, service.name, service.category, service.description, service.price, service.active !== false ? 1 : 0, service.createdAt || new Date().toISOString(), service.updatedAt || null]);
     }
 
     for (const record of database.medicalRecords || []) {
@@ -834,6 +906,16 @@ async function handleApi(request, response, requestUrl) {
             return (!search || searchable.includes(search)) && (!specialty || doctor.specialty.toLowerCase().includes(specialty) || doctor.department.toLowerCase().includes(specialty));
         });
         return sendJson(response, 200, { doctors });
+    }
+
+    if (method === 'GET' && route === '/api/departments') {
+        const departments = (database.departments || DEFAULT_DEPARTMENTS).filter((department) => department.active !== false);
+        return sendJson(response, 200, { departments });
+    }
+
+    if (method === 'GET' && route === '/api/services') {
+        const services = (database.services || DEFAULT_SERVICES).filter((service) => service.active !== false);
+        return sendJson(response, 200, { services });
     }
 
     if (method === 'GET' && route === '/api/lab-tests') {
@@ -1673,8 +1755,12 @@ async function handleApi(request, response, requestUrl) {
             createdAt: new Date().toISOString()
         };
 
-        if (!message.name || !message.email || !message.subject || !message.message || message.phone && !/^\+?[0-9 ()-]{7,20}$/.test(message.phone)) {
+        if (!message.name || !message.email || !message.subject || !message.message) {
             return sendError(response, 400, 'Complete the required contact fields with valid details.');
+        }
+
+        if (message.phone && !/^\+?[0-9 ()-]{7,20}$/.test(message.phone)) {
+            return sendError(response, 400, 'Provide a valid phone number if contact phone is provided.');
         }
 
         database.messages.push(message);
