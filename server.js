@@ -96,6 +96,51 @@ const DEFAULT_DOCTORS = [
         fee: 'Rs 550',
         availability: 'Mon-Sat',
         photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=500&q=80'
+    },
+    {
+        id: 'D006',
+        name: 'Dr. Kabir Shah',
+        department: 'Cardiology',
+        specialty: 'Preventive cardiology, heart rhythm, and long-term heart health.',
+        fee: 'Rs 950',
+        availability: 'Mon-Sat',
+        photo: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=500&q=80'
+    },
+    {
+        id: 'D007',
+        name: 'Dr. Mira Desai',
+        department: 'Orthopedics',
+        specialty: 'Sports injuries, joint pain, mobility, and recovery planning.',
+        fee: 'Rs 850',
+        availability: 'Tue-Sat',
+        photo: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=500&q=80'
+    },
+    {
+        id: 'D008',
+        name: 'Dr. Sanjana Iyer',
+        department: 'Pediatrics',
+        specialty: 'Child wellness, growth, immunizations, and family guidance.',
+        fee: 'Rs 700',
+        availability: 'Mon-Fri',
+        photo: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=500&q=80'
+    },
+    {
+        id: 'D009',
+        name: 'Dr. Arjun Patel',
+        department: 'Dermatology',
+        specialty: 'Skin conditions, acne, hair health, and allergy care.',
+        fee: 'Rs 750',
+        availability: 'Mon-Sat',
+        photo: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=500&q=80'
+    },
+    {
+        id: 'D010',
+        name: 'Dr. Fatima Qureshi',
+        department: 'ENT',
+        specialty: 'Sinus, hearing, throat, and voice care for adults and children.',
+        fee: 'Rs 650',
+        availability: 'Tue-Sat',
+        photo: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=500&q=80'
     }
 ];
 
@@ -462,6 +507,12 @@ async function ensureDatabase() {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
 
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_users_email ON users (email)');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_doctors_department ON doctors (department)');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_appointments_patient_date ON appointments (patient, date)');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_appointments_doctor_date ON appointments (doctor, date)');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_messages_email ON messages (email)');
+
     const [doctorRows] = await pool.query('SELECT * FROM doctors');
     const existingDoctorNames = new Set((doctorRows || []).map((doctor) => doctor.name));
     const missingDoctors = DEFAULT_DOCTORS.filter((doctor) => !existingDoctorNames.has(doctor.name));
@@ -509,76 +560,56 @@ async function writeDatabase(database) {
         return;
     }
 
-    await pool.query('DELETE FROM users');
-    await pool.query('DELETE FROM admins');
-    await pool.query('DELETE FROM appointments');
-    await pool.query('DELETE FROM patients');
-    await pool.query('DELETE FROM messages');
-    await pool.query('DELETE FROM doctors');
-    await pool.query('DELETE FROM doctor_availability');
-    await pool.query('DELETE FROM departments');
-    await pool.query('DELETE FROM services');
-    await pool.query('DELETE FROM medical_records');
-    await pool.query('DELETE FROM lab_reports');
-    await pool.query('DELETE FROM lab_tests');
-    await pool.query('DELETE FROM prescriptions');
-    await pool.query('DELETE FROM notifications');
-    await pool.query('DELETE FROM audit_logs');
+    const tableUpserts = [
+        ['users', 'INSERT INTO users (id, name, email, phone, age, dateOfBirth, gender, address, emergencyContact, password, createdAt, lastLoginAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email), phone = VALUES(phone), age = VALUES(age), dateOfBirth = VALUES(dateOfBirth), gender = VALUES(gender), address = VALUES(address), emergencyContact = VALUES(emergencyContact), password = VALUES(password), createdAt = VALUES(createdAt), lastLoginAt = VALUES(lastLoginAt)'],
+        ['admins', 'INSERT INTO admins (id, name, email, role, password, createdAt) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email), role = VALUES(role), password = VALUES(password), createdAt = VALUES(createdAt)'],
+        ['appointments', 'INSERT INTO appointments (id, doctor, date, time, reason, patient, status, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE doctor = VALUES(doctor), date = VALUES(date), time = VALUES(time), reason = VALUES(reason), patient = VALUES(patient), status = VALUES(status), createdAt = VALUES(createdAt), updatedAt = VALUES(updatedAt)'],
+        ['patients', 'INSERT INTO patients (id, name, age, gender) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), age = VALUES(age), gender = VALUES(gender)'],
+        ['messages', 'INSERT INTO messages (id, name, email, phone, subject, message, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email), phone = VALUES(phone), subject = VALUES(subject), message = VALUES(message), createdAt = VALUES(createdAt)'],
+        ['doctors', 'INSERT INTO doctors (id, name, department, specialty, fee, availability, photo, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), department = VALUES(department), specialty = VALUES(specialty), fee = VALUES(fee), availability = VALUES(availability), photo = VALUES(photo), createdAt = VALUES(createdAt), updatedAt = VALUES(updatedAt)'],
+        ['departments', 'INSERT INTO departments (id, name, description, active, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), description = VALUES(description), active = VALUES(active), createdAt = VALUES(createdAt), updatedAt = VALUES(updatedAt)'],
+        ['services', 'INSERT INTO services (id, name, category, description, price, active, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), category = VALUES(category), description = VALUES(description), price = VALUES(price), active = VALUES(active), createdAt = VALUES(createdAt), updatedAt = VALUES(updatedAt)'],
+        ['medical_records', 'INSERT INTO medical_records (id, patientEmail, title, summary, date, doctor, accessLevel, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE patientEmail = VALUES(patientEmail), title = VALUES(title), summary = VALUES(summary), date = VALUES(date), doctor = VALUES(doctor), accessLevel = VALUES(accessLevel), createdAt = VALUES(createdAt)'],
+        ['lab_reports', 'INSERT INTO lab_reports (id, patientEmail, testName, status, date, fileName, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE patientEmail = VALUES(patientEmail), testName = VALUES(testName), status = VALUES(status), date = VALUES(date), fileName = VALUES(fileName), createdAt = VALUES(createdAt)'],
+        ['lab_tests', 'INSERT INTO lab_tests (id, name, department, preparation, fee) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), department = VALUES(department), preparation = VALUES(preparation), fee = VALUES(fee)'],
+        ['prescriptions', 'INSERT INTO prescriptions (id, patientEmail, medication, dosage, instructions, doctor, date, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE patientEmail = VALUES(patientEmail), medication = VALUES(medication), dosage = VALUES(dosage), instructions = VALUES(instructions), doctor = VALUES(doctor), date = VALUES(date), createdAt = VALUES(createdAt)'],
+        ['notifications', 'INSERT INTO notifications (id, patientEmail, title, message, type, isRead, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE patientEmail = VALUES(patientEmail), title = VALUES(title), message = VALUES(message), type = VALUES(type), isRead = VALUES(isRead), createdAt = VALUES(createdAt)'],
+        ['audit_logs', 'INSERT INTO audit_logs (id, action, resource, resourceId, actor, ip, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE action = VALUES(action), resource = VALUES(resource), resourceId = VALUES(resourceId), actor = VALUES(actor), ip = VALUES(ip), createdAt = VALUES(createdAt)']
+    ];
 
-    for (const user of database.users || []) {
-        await pool.query('INSERT INTO users (id, name, email, phone, age, dateOfBirth, gender, address, emergencyContact, password, createdAt, lastLoginAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [user.id, user.name, user.email, user.phone, Number(user.age), user.dateOfBirth || null, user.gender || null, user.address || null, user.emergencyContact || null, user.password, user.createdAt, user.lastLoginAt || null]);
-    }
-
-    for (const admin of database.admins || []) {
-        await pool.query('INSERT INTO admins (id, name, email, role, password, createdAt) VALUES (?, ?, ?, ?, ?, ?)', [admin.id, admin.name, admin.email, admin.role || 'admin', admin.password, admin.createdAt]);
-    }
-
-    for (const appointment of database.appointments || []) {
-        await pool.query('INSERT INTO appointments (id, doctor, date, time, reason, patient, status, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [appointment.id, appointment.doctor, appointment.date, appointment.time, appointment.reason, appointment.patient, appointment.status, appointment.createdAt, appointment.updatedAt || null]);
-    }
-
-    for (const patient of database.patients || []) {
-        await pool.query('INSERT INTO patients (id, name, age, gender) VALUES (?, ?, ?, ?)', [patient.id, patient.name, Number(patient.age), patient.gender]);
-    }
-
-    for (const message of database.messages || []) {
-        await pool.query('INSERT INTO messages (id, name, email, phone, subject, message, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)', [message.id, message.name, message.email, message.phone || null, message.subject || '', message.message, message.createdAt]);
-    }
-
-    for (const doctor of database.doctors || []) {
-        await pool.query('INSERT INTO doctors (id, name, department, specialty, fee, availability, photo, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [doctor.id, doctor.name, doctor.department, doctor.specialty, doctor.fee, doctor.availability, doctor.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80', doctor.createdAt || new Date().toISOString(), doctor.updatedAt || null]);
-    }
-
-    for (const department of database.departments || []) {
-        await pool.query('INSERT INTO departments (id, name, description, active, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)', [department.id, department.name, department.description, department.active !== false ? 1 : 0, department.createdAt || new Date().toISOString(), department.updatedAt || null]);
-    }
-
-    for (const service of database.services || []) {
-        await pool.query('INSERT INTO services (id, name, category, description, price, active, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [service.id, service.name, service.category, service.description, service.price, service.active !== false ? 1 : 0, service.createdAt || new Date().toISOString(), service.updatedAt || null]);
-    }
-
-    for (const record of database.medicalRecords || []) {
-        await pool.query('INSERT INTO medical_records (id, patientEmail, title, summary, date, doctor, accessLevel, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [record.id, record.patientEmail, record.title, record.summary, record.date, record.doctor, record.accessLevel || 'authorized', record.createdAt]);
-    }
-
-    for (const report of database.labReports || []) {
-        await pool.query('INSERT INTO lab_reports (id, patientEmail, testName, status, date, fileName, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)', [report.id, report.patientEmail, report.testName, report.status, report.date, report.fileName, report.createdAt]);
-    }
-
-    for (const test of database.labTests || []) {
-        await pool.query('INSERT INTO lab_tests (id, name, department, preparation, fee) VALUES (?, ?, ?, ?, ?)', [test.id, test.name, test.department, test.preparation, test.fee]);
-    }
-
-    for (const prescription of database.prescriptions || []) {
-        await pool.query('INSERT INTO prescriptions (id, patientEmail, medication, dosage, instructions, doctor, date, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [prescription.id, prescription.patientEmail, prescription.medication, prescription.dosage, prescription.instructions, prescription.doctor, prescription.date, prescription.createdAt]);
-    }
-
-    for (const notification of database.notifications || []) {
-        await pool.query('INSERT INTO notifications (id, patientEmail, title, message, type, isRead, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)', [notification.id, notification.patientEmail, notification.title, notification.message, notification.type, notification.isRead ? 1 : 0, notification.createdAt]);
-    }
-
-    for (const auditLog of database.auditLogs || []) {
-        await pool.query('INSERT INTO audit_logs (id, action, resource, resourceId, actor, ip, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)', [auditLog.id, auditLog.action, auditLog.resource, auditLog.resourceId, auditLog.actor, auditLog.ip, auditLog.createdAt]);
+    for (const [tableName, query] of tableUpserts) {
+        const rows = database[tableName] || [];
+        for (const row of rows) {
+            if (tableName === 'users') {
+                await pool.query(query, [row.id, row.name, row.email, row.phone, Number(row.age), row.dateOfBirth || null, row.gender || null, row.address || null, row.emergencyContact || null, row.password, row.createdAt, row.lastLoginAt || null]);
+            } else if (tableName === 'admins') {
+                await pool.query(query, [row.id, row.name, row.email, row.role || 'admin', row.password, row.createdAt]);
+            } else if (tableName === 'appointments') {
+                await pool.query(query, [row.id, row.doctor, row.date, row.time, row.reason, row.patient, row.status, row.createdAt, row.updatedAt || null]);
+            } else if (tableName === 'patients') {
+                await pool.query(query, [row.id, row.name, Number(row.age), row.gender]);
+            } else if (tableName === 'messages') {
+                await pool.query(query, [row.id, row.name, row.email, row.phone || null, row.subject || '', row.message, row.createdAt]);
+            } else if (tableName === 'doctors') {
+                await pool.query(query, [row.id, row.name, row.department, row.specialty, row.fee, row.availability, row.photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80', row.createdAt || new Date().toISOString(), row.updatedAt || null]);
+            } else if (tableName === 'departments') {
+                await pool.query(query, [row.id, row.name, row.description, row.active !== false ? 1 : 0, row.createdAt || new Date().toISOString(), row.updatedAt || null]);
+            } else if (tableName === 'services') {
+                await pool.query(query, [row.id, row.name, row.category, row.description, row.price, row.active !== false ? 1 : 0, row.createdAt || new Date().toISOString(), row.updatedAt || null]);
+            } else if (tableName === 'medical_records') {
+                await pool.query(query, [row.id, row.patientEmail, row.title, row.summary, row.date, row.doctor, row.accessLevel || 'authorized', row.createdAt]);
+            } else if (tableName === 'lab_reports') {
+                await pool.query(query, [row.id, row.patientEmail, row.testName, row.status, row.date, row.fileName, row.createdAt]);
+            } else if (tableName === 'lab_tests') {
+                await pool.query(query, [row.id, row.name, row.department, row.preparation, row.fee]);
+            } else if (tableName === 'prescriptions') {
+                await pool.query(query, [row.id, row.patientEmail, row.medication, row.dosage, row.instructions, row.doctor, row.date, row.createdAt]);
+            } else if (tableName === 'notifications') {
+                await pool.query(query, [row.id, row.patientEmail, row.title, row.message, row.type, row.isRead ? 1 : 0, row.createdAt]);
+            } else if (tableName === 'audit_logs') {
+                await pool.query(query, [row.id, row.action, row.resource, row.resourceId, row.actor, row.ip, row.createdAt]);
+            }
+        }
     }
 }
 
@@ -676,6 +707,32 @@ function buildDashboardSummary(database) {
     };
 }
 
+function normalizePagination(pageValue, limitValue, fallbackLimit = 10, maxLimit = 50) {
+    const page = Number.parseInt(pageValue, 10);
+    const limit = Number.parseInt(limitValue, 10);
+    const safePage = Number.isFinite(page) && page > 0 ? page : 1;
+    const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.min(limit, maxLimit) : fallbackLimit;
+    return { page: safePage, limit: safeLimit };
+}
+
+function paginateList(items, pageValue, limitValue, fallbackLimit = 10, maxLimit = 50) {
+    const { page, limit } = normalizePagination(pageValue, limitValue, fallbackLimit, maxLimit);
+    const total = items.length;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const safePage = Math.min(page, totalPages);
+    const startIndex = (safePage - 1) * limit;
+    const endIndex = startIndex + limit;
+    return {
+        items: items.slice(startIndex, endIndex),
+        page: safePage,
+        limit,
+        total,
+        totalPages,
+        hasNextPage: safePage < totalPages,
+        hasPreviousPage: safePage > 1
+    };
+}
+
 function sanitizeEmail(email) {
     return String(email || '').trim().toLowerCase();
 }
@@ -754,19 +811,20 @@ function setSessionCookie(response, name, value, maxAgeSeconds = 60 * 60 * 24 * 
 
 function getRequestSession(request) {
     const cookies = getRequestCookies(request);
-    const patientSession = patientSessions.get(cookies.medicare_session || '');
+    const token = cookies.medicare_session || '';
+    const patientSession = patientSessions.get(token) || authSessions.get(token) || null;
     const adminSession = adminSessions.get(cookies.medicare_admin_session || '');
-    const authSession = authSessions.get(cookies.medicare_session || '');
-    return { patient: patientSession || authSession || null, admin: adminSession || null };
+    return { patient: patientSession, admin: adminSession || null };
 }
 
 function getAuthenticatedUserSession(request) {
     const cookies = getRequestCookies(request);
     const token = cookies.medicare_session || '';
-    const session = token ? authSessions.get(token) : null;
+    const session = token ? (authSessions.get(token) || patientSessions.get(token) || null) : null;
     if (!session) return null;
     if (Date.now() - session.createdAt > 7 * 24 * 60 * 60 * 1000) {
         authSessions.delete(token);
+        patientSessions.delete(token);
         return null;
     }
     return session;
@@ -900,12 +958,18 @@ async function handleApi(request, response, requestUrl) {
 
     if (method === 'GET' && route === '/api/doctors') {
         const search = String(requestUrl.searchParams.get('search') || '').trim().toLowerCase();
+        const department = String(requestUrl.searchParams.get('department') || '').trim();
         const specialty = String(requestUrl.searchParams.get('specialty') || '').trim().toLowerCase();
-        const doctors = database.doctors.filter((doctor) => {
+        const { page, limit } = normalizePagination(requestUrl.searchParams.get('page'), requestUrl.searchParams.get('limit'), 10, 20);
+        const doctors = (database.doctors || []).filter((doctor) => {
             const searchable = `${doctor.name} ${doctor.department} ${doctor.specialty}`.toLowerCase();
-            return (!search || searchable.includes(search)) && (!specialty || doctor.specialty.toLowerCase().includes(specialty) || doctor.department.toLowerCase().includes(specialty));
+            const matchesDepartment = !department || doctor.department.toLowerCase() === department.toLowerCase();
+            const matchesSearch = !search || searchable.includes(search);
+            const matchesSpecialty = !specialty || doctor.specialty.toLowerCase().includes(specialty) || doctor.department.toLowerCase().includes(specialty);
+            return matchesDepartment && matchesSearch && matchesSpecialty;
         });
-        return sendJson(response, 200, { doctors });
+        const paginated = paginateList(doctors, page, limit, 10, 20);
+        return sendJson(response, 200, { doctors: paginated.items, page: paginated.page, limit: paginated.limit, total: paginated.total, totalPages: paginated.totalPages, hasNextPage: paginated.hasNextPage, hasPreviousPage: paginated.hasPreviousPage });
     }
 
     if (method === 'GET' && route === '/api/departments') {
@@ -1563,6 +1627,9 @@ async function handleApi(request, response, requestUrl) {
 
     if (method === 'GET' && route === '/api/appointments') {
         const email = sanitizeEmail(requestUrl.searchParams.get('email'));
+        const status = String(requestUrl.searchParams.get('status') || '').trim();
+        const search = String(requestUrl.searchParams.get('search') || '').trim().toLowerCase();
+        const { page, limit } = normalizePagination(requestUrl.searchParams.get('page'), requestUrl.searchParams.get('limit'), 10, 50);
         const isAdmin = isAdminRequest(request);
         const session = getAuthenticatedUserSession(request);
         const isCurrentPatient = email ? isPatientRequest(request, email) : session?.role === 'patient';
@@ -1572,12 +1639,33 @@ async function handleApi(request, response, requestUrl) {
         if (email && !isAdmin && !isCurrentPatient) {
             return sendError(response, 403, 'Patient session required to view this appointment list.');
         }
+        let appointments = database.appointments;
         if (!isAdmin && session.role === 'doctor') {
             const doctorContext = getAuthorizedDoctorContext(request, database);
             if (!doctorContext) return sendError(response, 403, 'Doctor authorization is required.');
-            return sendJson(response, 200, { appointments: database.appointments.filter(doctorContext.ownsAppointment) });
+            appointments = database.appointments.filter(doctorContext.ownsAppointment);
+        } else {
+            appointments = database.appointments.filter((item) => isAdmin ? (!email || item.patient === email) : item.patient === session.email);
         }
-        return sendJson(response, 200, { appointments: database.appointments.filter((item) => isAdmin ? (!email || item.patient === email) : item.patient === session.email) });
+
+        if (status && status !== 'all') {
+            appointments = appointments.filter((item) => item.status === status);
+        }
+        if (search) {
+            appointments = appointments.filter((item) => `${item.doctor} ${item.patient} ${item.reason} ${item.date} ${item.time}`.toLowerCase().includes(search));
+        }
+
+        const paginated = paginateList(appointments, page, limit, 10, 50);
+        return sendJson(response, 200, {
+            appointments: paginated.items,
+            page: paginated.page,
+            limit: paginated.limit,
+            total: paginated.total,
+            totalPages: paginated.totalPages,
+            hasNextPage: paginated.hasNextPage,
+            hasPreviousPage: paginated.hasPreviousPage,
+            filters: { status, search }
+        });
     }
 
     if (method === 'POST' && route === '/api/appointments') {

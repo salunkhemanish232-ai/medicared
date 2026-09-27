@@ -1,4 +1,4 @@
-const CACHE_NAME = 'medicare-public-v3';
+const CACHE_NAME = 'medicare-public-v8';
 const PUBLIC_SHELL = [
   '/',
   '/index.html',
@@ -10,7 +10,11 @@ const PUBLIC_SHELL = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PUBLIC_SHELL)));
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(
+      PUBLIC_SHELL.map((url) => new Request(url, { cache: 'reload' }))
+    ))
+  );
   self.skipWaiting();
 });
 

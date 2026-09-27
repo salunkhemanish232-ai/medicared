@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const element = document.querySelector(selector);
         if (element) {
             element.textContent = message;
-            element.style.display = 'block';
+            element.style.setProperty('display', 'block', 'important');
             element.classList.remove('is-success');
         }
     };
@@ -43,13 +43,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const element = document.querySelector(selector);
         if (element) {
             element.textContent = message;
-            element.style.display = 'flex';
+            element.style.setProperty('display', 'flex', 'important');
             element.classList.add('is-success');
         }
     };
     const clearMessage = (selector) => {
         const element = document.querySelector(selector);
-        if (element) { element.textContent = ''; element.style.display = 'none'; }
+        if (element) {
+            element.textContent = '';
+            element.style.setProperty('display', 'none', 'important');
+        }
     };
     const clearSessionCookie = (name) => {
         document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
@@ -78,6 +81,30 @@ document.addEventListener('DOMContentLoaded', () => {
             applyTheme(nextTheme);
         });
     };
+    const normalizePublicNavigation = () => {
+        const navMenu = document.querySelector('#nav-menu');
+        if (!navMenu) return;
+
+        const hospitalLink = navMenu.querySelector('a[href="about.html"]');
+        if (hospitalLink) hospitalLink.textContent = 'Hospital';
+
+        const careLinks = [...navMenu.querySelectorAll('a[href="services.html"]')];
+        if (careLinks.length > 1) {
+            careLinks[0].textContent = 'Departments & Services';
+            careLinks.slice(1).forEach((link) => link.closest('li')?.remove());
+        } else if (careLinks[0]) {
+            careLinks[0].textContent = 'Departments & Services';
+        }
+
+        const currentPage = location.pathname.split('/').pop() || 'index.html';
+        navMenu.querySelectorAll('a[href]').forEach((link) => {
+            const linkPage = link.getAttribute('href')?.split('/').pop();
+            if (linkPage === currentPage) {
+                link.setAttribute('aria-current', 'page');
+                link.classList.add('is-current');
+            }
+        });
+    };
     const ensureBreadcrumbs = () => {
         if (document.querySelector('.breadcrumbs')) return;
         const pageTitle = document.title.replace('Medicare - ', '').trim();
@@ -90,6 +117,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const siteMain = document.querySelector('main') || document.querySelector('.main-content') || document.body.firstElementChild;
         if (siteMain) {
             siteMain.insertBefore(breadcrumbs, siteMain.firstChild);
+            if (siteMain.matches('.home-hero-professional, .site-hero, .doctors-hero')) {
+                breadcrumbs.style.position = 'absolute';
+                breadcrumbs.style.top = '22px';
+                breadcrumbs.style.left = 'max(24px, calc((100vw - 1240px) / 2))';
+                breadcrumbs.style.width = 'auto';
+                breadcrumbs.style.margin = '0';
+                breadcrumbs.style.padding = '0';
+            }
         } else {
             document.body.insertBefore(breadcrumbs, document.body.firstChild);
         }
@@ -187,6 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    normalizePublicNavigation();
     ensureThemeToggle();
     ensureBreadcrumbs();
     const menuToggle = document.querySelector('#menu-toggle');
@@ -535,7 +571,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span><i class="fa-regular fa-calendar"></i> ${doctor.availability}</span>
                             <strong>${doctor.fee}<small> / visit</small></strong>
                         </div>
-                        <div class="doctor-card-actions"><a href="doctors-detail.html?id=${encodeURIComponent(doctor.id)}" class="btn btn-outline">View profile</a><a href="appointments.html" class="btn doctor-book-btn">Book appointment</a></div>
+                        <div class="doctor-card-actions"><a href="doctors-detail.html?id=${encodeURIComponent(doctor.id)}" class="btn btn-outline">View profile</a><a href="appointments.html?doctor=${encodeURIComponent(doctor.id)}&department=${encodeURIComponent(doctor.department)}" class="btn doctor-book-btn">Book appointment</a></div>
                     </div>
                 </article>
             `).join('');
@@ -734,14 +770,49 @@ document.addEventListener('DOMContentLoaded', () => {
         if (patientEmail) patientEmail.value = session.email || '';
         if (patientPhone) patientPhone.value = session.phone || '';
     }
-    if (appointmentDate) appointmentDate.min = new Date().toISOString().split('T')[0];
-    if (doctorSelect) api('/api/doctors').then(({ doctors }) => doctors.forEach((doctor) => doctorSelect.add(new Option(`${doctor.name} - ${doctor.department}`, `${doctor.name} - ${doctor.department}`)))).catch((error) => showError('#bookingForm', error.message));
+    if (appointmentDate) {
+        const localToday = new Date();
+        localToday.setMinutes(localToday.getMinutes() - localToday.getTimezoneOffset());
+        appointmentDate.min = localToday.toISOString().slice(0, 10);
+    }
+    let availableBookingDoctors = [];
+    let requestedDoctor = new URLSearchParams(location.search).get('doctor') || '';
+    const requestedDepartment = new URLSearchParams(location.search).get('department') || '';
+    if (departmentSelect && requestedDepartment && [...departmentSelect.options].some((option) => option.value === requestedDepartment)) {
+        departmentSelect.value = requestedDepartment;
+    }
+    const populateBookingDoctors = () => {
+        if (!doctorSelect) return;
+        const selectedDoctor = doctorSelect.value;
+        const department = departmentSelect?.value || '';
+        const filteredDoctors = availableBookingDoctors.filter((doctor) => !department || doctor.department === department);
+        doctorSelect.replaceChildren(new Option(filteredDoctors.length ? 'Choose a doctor...' : 'No doctors available for this department', ''));
+        filteredDoctors.forEach((doctor) => {
+            const value = `${doctor.name} - ${doctor.department}`;
+            doctorSelect.add(new Option(value, value));
+        });
+        const requested = filteredDoctors.find((doctor) => doctor.id === requestedDoctor || `${doctor.name} - ${doctor.department}` === requestedDoctor);
+        const previous = filteredDoctors.find((doctor) => `${doctor.name} - ${doctor.department}` === selectedDoctor);
+        if (requested) doctorSelect.value = `${requested.name} - ${requested.department}`;
+        else if (previous) doctorSelect.value = `${previous.name} - ${previous.department}`;
+        requestedDoctor = '';
+    };
+    if (doctorSelect) {
+        api('/api/doctors')
+            .then(({ doctors }) => {
+                availableBookingDoctors = doctors;
+                populateBookingDoctors();
+            })
+            .catch((error) => showError('#bookingError', error.message));
+    }
+    departmentSelect?.addEventListener('change', populateBookingDoctors);
     document.querySelector('#openBookingBtn')?.addEventListener('click', () => {
         if (!session) return window.location.href = 'login.html'; bookingModal.style.setProperty('display', 'flex', 'important');
     });
     document.querySelector('#bookingModal #closeModalBtn')?.addEventListener('click', () => bookingModal.style.setProperty('display', 'none', 'important'));
     if (bookingForm) bookingForm.addEventListener('submit', async (event) => {
         event.preventDefault();
+        clearMessage('#bookingError');
         try {
             const result = await api('/api/appointments', { method: 'POST', body: JSON.stringify({ doctor: doctorSelect.value, department: departmentSelect?.value || '', date: document.querySelector('#appointmentDate').value, time: document.querySelector('#appointmentTime').value, reason: document.querySelector('#reason').value, patient: session.email }) });
             bookingForm.reset(); bookingModal.style.setProperty('display', 'none', 'important'); renderAppointments();
@@ -752,7 +823,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (bookingAppointmentId) bookingAppointmentId.textContent = result.appointment?.id || 'Pending';
             bookingSuccess?.classList.add('is-visible');
             bookingSuccess?.setAttribute('aria-hidden', 'false');
-        } catch (error) { showError('#bookingForm', error.message); }
+        } catch (error) { showError('#bookingError', error.message); }
     });
 
     async function renderAppointments() {
